@@ -5,18 +5,18 @@ import java.io.FileNotFoundException;
 import java.io.File;
 
 public class Matrix {
-    // Row, Col, and Matrix
+    // Atribut Row, Col, and Matrix
     int nRow, nCol;
     double[][] matrix;
 
-    // Constructor
+    // Konstruktor
     // Inisialisasi kosong. Matriks baru dibentuk dimensinya saat readMatrix.
     public Matrix() {
         nRow = 0;
         nCol = 0;
     }
 
-    // Read input matrix from keyboard
+    // Baca input matriks melalui keyboard
     public void readMatrixKeyboard() {
         Scanner keyboardReader = new Scanner(System.in);
 
@@ -51,7 +51,7 @@ public class Matrix {
         keyboardReader.close();
     }
 
-    // Read input matrix from file
+    // Baca input matriks melalui file di directory test/input/[namafile]
     public void readMatrixFile() {
         String tempRow, fileName;
 
@@ -100,7 +100,7 @@ public class Matrix {
 
     }
 
-    // Print matrix
+    // Cetak matriks
     public void printMatrix() {
         for (int i = 0; i < nRow; i++) {
             for (int j = 0; j < nCol; j++) {
@@ -117,23 +117,190 @@ public class Matrix {
         }
     }
 
-    // Get number of rows
+    // Selektor baris
     public int getRow() {
         return nRow;
     }
 
-    // Get number of columns
+    // Selektor kolom
     public int getCol() {
         return nCol;
     }
 
-    // Get element
+    // Selektor get elemen ke row & col
     public double getElmt(int row, int col) {
         return matrix[row][col];
     }
 
-    // Check if matrix is square
+    // Selektor set element
+    public void setElmt(int row, int col, double value) {
+        matrix[row][col] = value;
+    }
+
+    // Copy matrix value to current object
+    public void copy(Matrix mIn) {
+        // Not equal size
+        if (!isSizeEqual(mIn)) {
+            System.out.println("Error: matrix size not equal.");
+            return;
+        }
+
+        // Size equal
+        for (int i = 0; i < getRow(); i++) {
+            for (int j = 0; j < getCol(); j++) {
+                double newValue = mIn.getElmt(i, j);
+                setElmt(i, j, newValue);
+            }
+        }
+
+    }
+
+    // Cek apakah ukuran matriks objek ini sama dengan ukuran matriks objek input
+    public boolean isSizeEqual(Matrix mIn) {
+        return getRow() == mIn.getRow() && getCol() == mIn.getCol();
+    }
+
+    // Cek apakah matriks persegi
     public boolean isSquare() {
         return nRow == nCol;
     }
+
+    // Cek apakah matriks kosong
+    public boolean isEmpty() {
+        return nRow == 0 && nCol == 0;
+    }
+
+    // Tukar baris row1 dengan row2
+    public void swapRow(int row1, int row2) {
+        // Temporary array
+        double[] temp = matrix[row1];
+
+        // Swap
+        matrix[row1] = matrix[row2];
+        matrix[row2] = temp;
+    }
+
+    // Kali sebuah baris row dengan k
+    public void multiplyRowConstant(int row, double k) {
+        for (int j = 0; j < getCol(); j++) {
+            matrix[row][j] *= k;
+        }
+    }
+
+    // Kali matriks dengan k
+    public void multiplyConstant(double k) {
+        for (int i = 0; i < getRow(); i++) {
+            multiplyRowConstant(i, k);
+        }
+    }
+
+    // Tambahkan baris 1 dengan k * baris 2
+    public void addRow1WithKRow2(int row1, int row2, double k) {
+        for (int j = 0; j < getCol(); j++) {
+            matrix[row1][j] += k * matrix[row2][j];
+        }
+    }
+
+    // Transformasi ke bentuk echelon form
+    public void transformToEchelonForm() {
+        // Loop setiap baris
+        for (int i = 0; i < getRow(); i++) {
+            // Cari nonZeroIndex baris lainnya pada baris bawahnya yang paling kecil dan
+            // Simpan index row pada rowIndex
+            int rowIndex = i, nonZeroMinimumIndex = 999999999;
+            for (int j = i; j < getRow(); j++) {
+                // Hitung kemunculan 0 pertama2 pada suatu baris
+                int countZero = 0;
+                while (getElmt(j, countZero) == 0 && countZero < getCol() - 1) {
+                    countZero += 1;
+                }
+
+                if (j == i) {
+                    // Iterasi pertama, inisialisasi nonZeroMMinimumIndex
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                } else if (countZero < nonZeroMinimumIndex) {
+                    // Iterasi selanjutnya, cari nilai minimum
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                }
+            }
+
+            // Swap jika indeks row yang sedang ditinjau bukan nol terkecil.
+            if (i != rowIndex) {
+                swapRow(i, rowIndex);
+            }
+
+            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
+            double divider = getElmt(i, nonZeroMinimumIndex);
+            if (divider != 0) {
+                // Kasus bukan 0 0 0 0 0 0 0
+                multiplyRowConstant(i, 1 / divider);
+            }
+
+            // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
+            // sedang ditinjau
+            for (int j = i + 1; j < getRow(); j++) {
+                addRow1WithKRow2(j, i, -1 * getElmt(j, nonZeroMinimumIndex));
+            }
+        }
+    }
+
+    // Ubah ke bentuk echelon form
+    public void transformToReducedEchelonForm() {
+        // Loop setiap baris
+        for (int i = 0; i < getRow(); i++) {
+            // Cari nonZeroIndex baris lainnya pada baris bawahnya yang paling kecil dan
+            // Simpan index row pada rowIndex
+            int rowIndex = i, nonZeroMinimumIndex = 999999999;
+            for (int j = i; j < getRow(); j++) {
+                // Hitung kemunculan 0 pertama2 pada suatu baris
+                int countZero = 0;
+                while (getElmt(j, countZero) == 0 && countZero < getCol() - 1) {
+                    countZero += 1;
+                }
+
+                if (j == i) {
+                    // Iterasi pertama, inisialisasi nonZeroMMinimumIndex
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                } else if (countZero < nonZeroMinimumIndex) {
+                    // Iterasi selanjutnya, cari nilai minimum
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                }
+            }
+
+            // Swap jika indeks row yang sedang ditinjau bukan nol terkecil.
+            if (i != rowIndex) {
+                swapRow(i, rowIndex);
+            }
+
+            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
+            double divider = getElmt(i, nonZeroMinimumIndex);
+            if (divider != 0) {
+                // Kasus bukan 0 0 0 0 0 0 0
+                multiplyRowConstant(i, 1 / divider);
+            }
+
+            // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
+            // sedang ditinjau
+            for (int j = 0; j < getRow(); j++) {
+                if (i != j) {
+                    addRow1WithKRow2(j, i, -1 * getElmt(j, nonZeroMinimumIndex));
+                }
+            }
+        }
+    }
+
+    // Matriks Balikan
+
+    // Cramer
+
+    // Determinan Reduksi Baris
+
+    // Ekspansi Kofaktor
+
+    // Hitung Balikan Matriks
+
 }
