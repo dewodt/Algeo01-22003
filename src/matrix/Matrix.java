@@ -1,6 +1,7 @@
 package matrix;
 
 import java.util.Scanner;
+
 import java.io.FileNotFoundException;
 import java.io.File;
 
@@ -10,10 +11,18 @@ public class Matrix {
     double[][] matrix;
 
     // Konstruktor
-    // Inisialisasi kosong. Matriks baru dibentuk dimensinya saat readMatrix.
+    // Inisialisasi kosong, diisi baru saat readMatrix.
     public Matrix() {
-        nRow = 0;
-        nCol = 0;
+        this.nRow = 0;
+        this.nCol = 0;
+        this.matrix = new double[0][0];
+    }
+
+    // Inisialisasi matriks dengan row dan col langsung.
+    public Matrix(int row, int col) {
+        this.nRow = row;
+        this.nCol = col;
+        this.matrix = new double[row][col];
     }
 
     // Baca input matriks melalui keyboard
@@ -22,28 +31,28 @@ public class Matrix {
 
         // Input row matriks
         System.out.println("Masukkan jumlah baris matriks");
-        nRow = keyboardReader.nextInt();
-        while (nRow <= 0) {
+        this.nRow = keyboardReader.nextInt();
+        while (this.nRow <= 0) {
             System.out.println("Jumlah baris dalam matriks harus > 0");
-            nRow = keyboardReader.nextInt();
+            this.nRow = keyboardReader.nextInt();
         }
 
         // Input col matriks
         System.out.println("Masukkan jumlah kolom matriks");
-        nCol = keyboardReader.nextInt();
-        while (nCol <= 0) {
+        this.nCol = keyboardReader.nextInt();
+        while (this.nCol <= 0) {
             System.out.println("Jumlah kolom dalam matriks harus > 0");
-            nCol = keyboardReader.nextInt();
+            this.nCol = keyboardReader.nextInt();
         }
 
         // Inisialisasi matriks
-        matrix = new double[nRow][nCol];
+        this.matrix = new double[this.nRow][this.nCol];
 
         // Input nilai matriks
         System.out.println("Masukkan nilai matriks (pisahkan kolom dengan spasi dan baris dengan enter/newline)");
-        for (int i = 0; i < nRow; i++) {
-            for (int j = 0; j < nCol; j++) {
-                matrix[i][j] = keyboardReader.nextDouble();
+        for (int i = 0; i < this.nRow; i++) {
+            for (int j = 0; j < this.nCol; j++) {
+                this.matrix[i][j] = keyboardReader.nextDouble();
             }
         }
 
@@ -67,28 +76,28 @@ public class Matrix {
             Scanner fileReaderRowCol = new Scanner(fileObj);
 
             // Get row and column count
-            nRow = 0;
-            nCol = 0;
+            this.nRow = 0;
+            this.nCol = 0;
             while (fileReaderRowCol.hasNextLine()) {
                 tempRow = fileReaderRowCol.nextLine();
                 // Count column
-                if (nCol == 0) {
-                    nCol = tempRow.split(" ").length;
+                if (this.nCol == 0) {
+                    this.nCol = tempRow.split(" ").length;
                 }
 
                 // Count row
-                nRow += 1;
+                this.nRow += 1;
             }
             fileReaderRowCol.close();
 
             // Initialize matrix
-            matrix = new double[nRow][nCol];
+            this.matrix = new double[this.nRow][this.nCol];
 
             // Get matrix data
             Scanner fileReaderMatrix = new Scanner(fileObj);
-            for (int i = 0; i < nRow; i++) {
-                for (int j = 0; j < nCol; j++) {
-                    matrix[i][j] = fileReaderMatrix.nextDouble();
+            for (int i = 0; i < this.nRow; i++) {
+                for (int j = 0; j < this.nCol; j++) {
+                    this.matrix[i][j] = fileReaderMatrix.nextDouble();
                 }
             }
             fileReaderMatrix.close();
@@ -102,13 +111,13 @@ public class Matrix {
 
     // Cetak matriks
     public void printMatrix() {
-        for (int i = 0; i < nRow; i++) {
-            for (int j = 0; j < nCol; j++) {
+        for (int i = 0; i < this.nRow; i++) {
+            for (int j = 0; j < this.nCol; j++) {
                 // Each element
-                System.out.print(matrix[i][j]);
+                System.out.print(this.matrix[i][j]);
 
                 // Space
-                if (j != nCol - 1) {
+                if (j != this.nCol - 1) {
                     System.out.print(" ");
                 }
             }
@@ -119,77 +128,138 @@ public class Matrix {
 
     // Selektor baris
     public int getRow() {
-        return nRow;
+        return this.nRow;
     }
 
     // Selektor kolom
     public int getCol() {
-        return nCol;
+        return this.nCol;
     }
 
     // Selektor get elemen ke row & col
     public double getElmt(int row, int col) {
-        return matrix[row][col];
+        return this.matrix[row][col];
     }
 
     // Selektor set element
     public void setElmt(int row, int col, double value) {
-        matrix[row][col] = value;
-    }
-
-    // Reset matrix ubah ukuran dan reset isinya
-    public void initialize(int row, int col) {
-        nRow = row;
-        nCol = col;
-        matrix = new double[row][col];
+        this.matrix[row][col] = value;
     }
 
     // Copy matrix value to current object
     public void copy(Matrix mIn) {
-        nRow = mIn.nRow;
-        nCol = mIn.nCol;
-        matrix = mIn.matrix;
+        this.nRow = mIn.nRow;
+        this.nCol = mIn.nCol;
+        this.matrix = mIn.matrix;
     }
 
     // Return matrix tranpose
-    public void transformToTranpose() {
-        int tempNRow;
-        double[][] tempMatrix = new double[nCol][nRow];
+    public Matrix transpose() {
+        Matrix result = new Matrix(this.getCol(), this.getRow());
 
         // Fill temp matrix
-        for (int i = 0; i < getRow(); i++) {
-            for (int j = 0; j < getCol(); j++) {
-                tempMatrix[j][i] = matrix[i][j];
+        for (int i = 0; i < this.getRow(); i++) {
+            for (int j = 0; j < this.getCol(); j++) {
+                result.setElmt(j, i, this.matrix[i][j]);
             }
         }
 
-        // Swap col & row
-        tempNRow = nRow;
-        nRow = nCol;
-        nCol = tempNRow;
-
-        // Update matrix
-        matrix = tempMatrix;
+        return result;
     }
 
-    // Transform to adjoin
-    public void transformToAdjoin() {
+    // Transformasi matriks ini ke bentuk identitas
+    public static Matrix createIdentity(int n) {
+        // Inisialisasi
+        Matrix result = new Matrix(n, n);
 
+        // Jika persegi, transformasi
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j) {
+                    result.setElmt(i, j, 1.0);
+                } else {
+                    result.setElmt(i, j, 0);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Return matrix addition of m1 + m2
+    public static Matrix addMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+        // Throw error when size not equal
+        if (!m1.isSizeEqual(m2)) {
+            throw new Error.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
+        }
+
+        // If size is equal
+        Matrix result = new Matrix(m1.getRow(), m1.getCol());
+        for (int i = 0; i < m1.getRow(); i++) {
+            for (int j = 0; j < m1.getCol(); j++) {
+                double newValue = m1.getElmt(i, j) + m2.getElmt(i, j);
+                result.setElmt(i, j, newValue);
+            }
+        }
+
+        return result;
+    }
+
+    // Return matrix substraction of m1 - m2
+    public static Matrix substractMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+        // Throw error when size not equal
+        if (!m1.isSizeEqual(m2)) {
+            throw new Error.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
+        }
+
+        // If size is equal
+        Matrix result = new Matrix(m1.getRow(), m1.getCol());
+        for (int i = 0; i < m1.getRow(); i++) {
+            for (int j = 0; j < m1.getCol(); j++) {
+                double newValue = m1.getElmt(i, j) - m2.getElmt(i, j);
+                result.setElmt(i, j, newValue);
+            }
+        }
+
+        return result;
+    }
+
+    // Return matrix multiplication
+    public static Matrix multiplyMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+        // Throw error when not multiplicable
+        if (m1.getCol() != m2.getRow()) {
+            throw new Error.InvalidMatrixSizeException(
+                    "Ukuran kolom matriks 1 harus sama dengan ukuran kolom matriks 2");
+        }
+
+        // If multiplable
+        Matrix result = new Matrix(m1.getRow(), m2.getCol());
+        for (int i = 0; i < m1.getRow(); i++) {
+            for (int j = 0; j < m2.getCol(); j++) {
+                double sum = 0.0;
+                for (int k = 0; k < m1.getCol(); k++) {
+                    sum += m1.getElmt(i, k) * m2.getElmt(k, j);
+                }
+                result.setElmt(i, j, sum);
+            }
+        }
+
+        return result;
     }
 
     // Cek apakah ukuran matriks objek ini sama dengan ukuran matriks objek input
     public boolean isSizeEqual(Matrix mIn) {
-        return getRow() == mIn.getRow() && getCol() == mIn.getCol();
+        return this.getRow() == mIn.getRow() && this.getCol() == mIn.getCol();
     }
 
     // Cek apakah matriks persegi
     public boolean isSquare() {
-        return nRow == nCol;
+        return this.getRow() == this.getCol();
     }
 
     // Cek apakah matriks kosong
     public boolean isEmpty() {
-        return nRow == 0 && nCol == 0;
+        return this.getRow() == 0 && this.getCol() == 0;
     }
 
     // Cek apakah matriks identitas
@@ -200,9 +270,9 @@ public class Matrix {
             return false;
         }
 
-        for (int i = 0; i < nRow; i++) {
-            for (int j = 0; j < nCol; j++) {
-                double elmt = getElmt(i, j);
+        for (int i = 0; i < this.getRow(); i++) {
+            for (int j = 0; j < this.getCol(); j++) {
+                double elmt = this.getElmt(i, j);
                 if ((i == j && elmt != 1) || (i != j && elmt != 0)) {
                     return false;
                 }
@@ -215,65 +285,45 @@ public class Matrix {
     // Tukar baris row1 dengan row2
     public void swapRow(int row1, int row2) {
         // Temporary array
-        double[] temp = matrix[row1];
+        double[] temp = this.matrix[row1];
 
         // Swap
-        matrix[row1] = matrix[row2];
-        matrix[row2] = temp;
+        this.matrix[row1] = this.matrix[row2];
+        this.matrix[row2] = temp;
     }
 
     // Kali sebuah baris row dengan k
     public void multiplyRowConstant(int row, double k) {
-        for (int j = 0; j < getCol(); j++) {
-            matrix[row][j] *= k;
+        for (int j = 0; j < this.getCol(); j++) {
+            this.matrix[row][j] *= k;
         }
     }
 
     // Kali matriks dengan k
     public void multiplyConstant(double k) {
-        for (int i = 0; i < getRow(); i++) {
+        for (int i = 0; i < this.getRow(); i++) {
             multiplyRowConstant(i, k);
         }
     }
 
     // Tambahkan baris 1 dengan k * baris 2
     public void addRow1WithKRow2(int row1, int row2, double k) {
-        for (int j = 0; j < getCol(); j++) {
-            matrix[row1][j] += k * matrix[row2][j];
-        }
-    }
-
-    // Transformasi matriks ini ke bentuk identitas
-    public void transformToIdentity() {
-        // Handle kasus matriks bukan kotak
-        if (!isSquare()) {
-            System.out.println("Matriks identitas hanya untuk matriks persegi.");
-            return;
-        }
-
-        // Jika persegi, transformasi
-        for (int i = 0; i < getRow(); i++) {
-            for (int j = 0; j < getCol(); j++) {
-                if (i == j) {
-                    setElmt(i, j, 1.0);
-                } else {
-                    setElmt(i, j, 0);
-                }
-            }
+        for (int j = 0; j < this.getCol(); j++) {
+            this.matrix[row1][j] += k * this.matrix[row2][j];
         }
     }
 
     // Transformasi ke bentuk echelon form
     public void transformToEchelonForm() {
         // Loop setiap baris
-        for (int i = 0; i < getRow(); i++) {
+        for (int i = 0; i < this.getRow(); i++) {
             // Cari nonZeroIndex baris lainnya pada baris bawahnya yang paling kecil dan
             // Simpan index row pada rowIndex
             int rowIndex = i, nonZeroMinimumIndex = 999999999;
-            for (int j = i; j < getRow(); j++) {
+            for (int j = i; j < this.getRow(); j++) {
                 // Hitung kemunculan 0 pertama2 pada suatu baris
                 int countZero = 0;
-                while (getElmt(j, countZero) == 0 && countZero < getCol() - 1) {
+                while (this.getElmt(j, countZero) == 0 && countZero < this.getCol() - 1) {
                     countZero += 1;
                 }
 
@@ -290,20 +340,20 @@ public class Matrix {
 
             // Swap jika indeks row yang sedang ditinjau bukan nol terkecil.
             if (i != rowIndex) {
-                swapRow(i, rowIndex);
+                this.swapRow(i, rowIndex);
             }
 
             // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
             double divider = getElmt(i, nonZeroMinimumIndex);
             if (divider != 0) {
                 // Kasus bukan 0 0 0 0 0 0 0
-                multiplyRowConstant(i, 1 / divider);
+                this.multiplyRowConstant(i, 1 / divider);
             }
 
             // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
             // sedang ditinjau
             for (int j = i + 1; j < getRow(); j++) {
-                addRow1WithKRow2(j, i, -1 * getElmt(j, nonZeroMinimumIndex));
+                this.addRow1WithKRow2(j, i, -1 * this.getElmt(j, nonZeroMinimumIndex));
             }
         }
     }
@@ -311,14 +361,14 @@ public class Matrix {
     // Ubah ke bentuk echelon form
     public void transformToReducedEchelonForm() {
         // Loop setiap baris
-        for (int i = 0; i < getRow(); i++) {
+        for (int i = 0; i < this.getRow(); i++) {
             // Cari nonZeroIndex baris lainnya pada baris bawahnya yang paling kecil dan
             // Simpan index row pada rowIndex
             int rowIndex = i, nonZeroMinimumIndex = 999999999;
-            for (int j = i; j < getRow(); j++) {
+            for (int j = i; j < this.getRow(); j++) {
                 // Hitung kemunculan 0 pertama2 pada suatu baris
                 int countZero = 0;
-                while (getElmt(j, countZero) == 0 && countZero < getCol() - 1) {
+                while (this.getElmt(j, countZero) == 0 && countZero < this.getCol() - 1) {
                     countZero += 1;
                 }
 
@@ -335,21 +385,21 @@ public class Matrix {
 
             // Swap jika indeks row yang sedang ditinjau bukan nol terkecil.
             if (i != rowIndex) {
-                swapRow(i, rowIndex);
+                this.swapRow(i, rowIndex);
             }
 
             // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
-            double divider = getElmt(i, nonZeroMinimumIndex);
+            double divider = this.getElmt(i, nonZeroMinimumIndex);
             if (divider != 0) {
                 // Kasus bukan 0 0 0 0 0 0 0
-                multiplyRowConstant(i, 1 / divider);
+                this.multiplyRowConstant(i, 1 / divider);
             }
 
             // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
             // sedang ditinjau
-            for (int j = 0; j < getRow(); j++) {
+            for (int j = 0; j < this.getRow(); j++) {
                 if (i != j) {
-                    addRow1WithKRow2(j, i, -1 * getElmt(j, nonZeroMinimumIndex));
+                    this.addRow1WithKRow2(j, i, -1 * this.getElmt(j, nonZeroMinimumIndex));
                 }
             }
         }
@@ -410,30 +460,32 @@ public class Matrix {
     }
 
     // Inverse matriks eselon baris
-    public void inverseByERO() {
+    public Matrix inverseByERO() throws Error.NoInverseMatrixException {
         // Ide:
         // 1. Gabungkan matriks menajdi berukuran n x 2n
         // 2. Remudian reduksi eselon form
         // 3. Pisah matriks menjadi 2. Cek apakah yang kiri identitas atau bukan
 
+        // Validasi square
+        if (!this.isSquare()) {
+            throw new Error.NoInverseMatrixException(
+                    "Matriks ini tidak memiliki inverse karena bukan matriks persegi!");
+        }
+
+        // Inisialisasi
         Matrix identity = new Matrix();
-        Matrix combined = new Matrix();
+        identity = createIdentity(this.getRow());
+        Matrix combined = new Matrix(this.getRow(), 2 * this.getCol());
 
-        // Bikin matriks identitaas ukuran yang sama dengan matriks sekarang
-        identity.initialize(nRow, nCol);
-        identity.transformToIdentity();
-
-        // Bikin matriks kombinasi
-        combined.initialize(nRow, 2 * nCol);
-        for (int i = 0; i < nRow; i++) {
-            for (int j = 0; j < 2 * nCol; j++) {
-                if (j < nCol) {
+        for (int i = 0; i < this.getRow(); i++) {
+            for (int j = 0; j < 2 * this.getCol(); j++) {
+                if (j < this.getCol()) {
                     // Matriks kiri merupakan matriks yang mau dicari inversenya
-                    double elmt = getElmt(i, j);
+                    double elmt = this.getElmt(i, j);
                     combined.setElmt(i, j, elmt);
                 } else {
                     // Matriks kanan merupakan matriks identitas
-                    double elmt = identity.getElmt(i, j - nCol);
+                    double elmt = identity.getElmt(i, j - this.getCol());
                     combined.setElmt(i, j, elmt);
                 }
             }
@@ -443,32 +495,30 @@ public class Matrix {
         combined.transformToReducedEchelonForm();
 
         // Pisahkan kedua matriks
-        Matrix augmentedLeft = new Matrix();
-        Matrix augmentedRight = new Matrix();
-        augmentedLeft.initialize(nRow, nCol);
-        augmentedRight.initialize(nRow, nCol);
+        Matrix augmentedLeft = new Matrix(this.getRow(), this.getCol());
+        Matrix augmentedRight = new Matrix(this.getRow(), this.getCol());
 
-        for (int i = 0; i < nRow; i++) {
-            for (int j = 0; j < nCol; j++) {
+        for (int i = 0; i < this.getRow(); i++) {
+            for (int j = 0; j < this.getCol(); j++) {
                 // Matriks augmented bagian kiri
                 double leftElmt = combined.getElmt(i, j);
                 augmentedLeft.setElmt(i, j, leftElmt);
 
                 // Matriks augmented bagian kanan
-                double rightElmt = combined.getElmt(i, j + nCol);
+                double rightElmt = combined.getElmt(i, j + this.getCol());
                 augmentedRight.setElmt(i, j, rightElmt);
             }
         }
 
         // Cek apakah matriks augmented bagian kiri matriks identitas
         if (!augmentedLeft.isIdentity()) {
-            System.out.println(
+            throw new Error.NoInverseMatrixException(
                     "Matriks tidak memiliki inverse karena augmented bagian kiri tidak dapat mencapai matriks identitas");
-            return;
         }
 
         // Jika memiliki matriks
-        copy(augmentedRight);
+        return augmentedRight;
     }
 
+    //
 }
