@@ -137,6 +137,13 @@ public class Matrix {
         matrix[row][col] = value;
     }
 
+    // Reset matrix ubah ukuran dan reset isinya
+    public void initialize(int row, int col) {
+        nRow = row;
+        nCol = col;
+        matrix = new double[row][col];
+    }
+
     // Copy matrix value to current object
     public void copy(Matrix mIn) {
         nRow = mIn.nRow;
@@ -145,7 +152,7 @@ public class Matrix {
     }
 
     // Return matrix tranpose
-    public void tranpose() {
+    public void transformToTranpose() {
         int tempNRow;
         double[][] tempMatrix = new double[nCol][nRow];
 
@@ -165,6 +172,11 @@ public class Matrix {
         matrix = tempMatrix;
     }
 
+    // Transform to adjoin
+    public void transformToAdjoin() {
+
+    }
+
     // Cek apakah ukuran matriks objek ini sama dengan ukuran matriks objek input
     public boolean isSizeEqual(Matrix mIn) {
         return getRow() == mIn.getRow() && getCol() == mIn.getCol();
@@ -178,6 +190,26 @@ public class Matrix {
     // Cek apakah matriks kosong
     public boolean isEmpty() {
         return nRow == 0 && nCol == 0;
+    }
+
+    // Cek apakah matriks identitas
+    public boolean isIdentity() {
+        // Cek matriks persegi atau bukan
+        if (!isSquare()) {
+            System.out.println("Matriks identitas harus berbentuk persegi");
+            return false;
+        }
+
+        for (int i = 0; i < nRow; i++) {
+            for (int j = 0; j < nCol; j++) {
+                double elmt = getElmt(i, j);
+                if ((i == j && elmt != 1) || (i != j && elmt != 0)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     // Tukar baris row1 dengan row2
@@ -208,6 +240,26 @@ public class Matrix {
     public void addRow1WithKRow2(int row1, int row2, double k) {
         for (int j = 0; j < getCol(); j++) {
             matrix[row1][j] += k * matrix[row2][j];
+        }
+    }
+
+    // Transformasi matriks ini ke bentuk identitas
+    public void transformToIdentity() {
+        // Handle kasus matriks bukan kotak
+        if (!isSquare()) {
+            System.out.println("Matriks identitas hanya untuk matriks persegi.");
+            return;
+        }
+
+        // Jika persegi, transformasi
+        for (int i = 0; i < getRow(); i++) {
+            for (int j = 0; j < getCol(); j++) {
+                if (i == j) {
+                    setElmt(i, j, 1.0);
+                } else {
+                    setElmt(i, j, 0);
+                }
+            }
         }
     }
 
@@ -303,8 +355,8 @@ public class Matrix {
         }
     }
 
-    // Determinan Reduksi Baris
-    public double determinantByRowReduction() {
+    // Determinan Reduksi Baris (operasi baris elementer)
+    public double determinantByERO() {
         double det = 1.0;
         Matrix temp = new Matrix();
         temp.copy(this);
@@ -355,6 +407,68 @@ public class Matrix {
         }
 
         return det;
+    }
+
+    // Inverse matriks eselon baris
+    public void inverseByERO() {
+        // Ide:
+        // 1. Gabungkan matriks menajdi berukuran n x 2n
+        // 2. Remudian reduksi eselon form
+        // 3. Pisah matriks menjadi 2. Cek apakah yang kiri identitas atau bukan
+
+        Matrix identity = new Matrix();
+        Matrix combined = new Matrix();
+
+        // Bikin matriks identitaas ukuran yang sama dengan matriks sekarang
+        identity.initialize(nRow, nCol);
+        identity.transformToIdentity();
+
+        // Bikin matriks kombinasi
+        combined.initialize(nRow, 2 * nCol);
+        for (int i = 0; i < nRow; i++) {
+            for (int j = 0; j < 2 * nCol; j++) {
+                if (j < nCol) {
+                    // Matriks kiri merupakan matriks yang mau dicari inversenya
+                    double elmt = getElmt(i, j);
+                    combined.setElmt(i, j, elmt);
+                } else {
+                    // Matriks kanan merupakan matriks identitas
+                    double elmt = identity.getElmt(i, j - nCol);
+                    combined.setElmt(i, j, elmt);
+                }
+            }
+        }
+
+        // Reduksi matriks
+        combined.transformToReducedEchelonForm();
+
+        // Pisahkan kedua matriks
+        Matrix augmentedLeft = new Matrix();
+        Matrix augmentedRight = new Matrix();
+        augmentedLeft.initialize(nRow, nCol);
+        augmentedRight.initialize(nRow, nCol);
+
+        for (int i = 0; i < nRow; i++) {
+            for (int j = 0; j < nCol; j++) {
+                // Matriks augmented bagian kiri
+                double leftElmt = combined.getElmt(i, j);
+                augmentedLeft.setElmt(i, j, leftElmt);
+
+                // Matriks augmented bagian kanan
+                double rightElmt = combined.getElmt(i, j + nCol);
+                augmentedRight.setElmt(i, j, rightElmt);
+            }
+        }
+
+        // Cek apakah matriks augmented bagian kiri matriks identitas
+        if (!augmentedLeft.isIdentity()) {
+            System.out.println(
+                    "Matriks tidak memiliki inverse karena augmented bagian kiri tidak dapat mencapai matriks identitas");
+            return;
+        }
+
+        // Jika memiliki matriks
+        copy(augmentedRight);
     }
 
 }
