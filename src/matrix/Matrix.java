@@ -139,20 +139,30 @@ public class Matrix {
 
     // Copy matrix value to current object
     public void copy(Matrix mIn) {
-        // Not equal size
-        if (!isSizeEqual(mIn)) {
-            System.out.println("Error: matrix size not equal.");
-            return;
-        }
+        nRow = mIn.nRow;
+        nCol = mIn.nCol;
+        matrix = mIn.matrix;
+    }
 
-        // Size equal
+    // Return matrix tranpose
+    public void tranpose() {
+        int tempNRow;
+        double[][] tempMatrix = new double[nCol][nRow];
+
+        // Fill temp matrix
         for (int i = 0; i < getRow(); i++) {
             for (int j = 0; j < getCol(); j++) {
-                double newValue = mIn.getElmt(i, j);
-                setElmt(i, j, newValue);
+                tempMatrix[j][i] = matrix[i][j];
             }
         }
 
+        // Swap col & row
+        tempNRow = nRow;
+        nRow = nCol;
+        nCol = tempNRow;
+
+        // Update matrix
+        matrix = tempMatrix;
     }
 
     // Cek apakah ukuran matriks objek ini sama dengan ukuran matriks objek input
@@ -293,14 +303,58 @@ public class Matrix {
         }
     }
 
-    // Matriks Balikan
-
-    // Cramer
-
     // Determinan Reduksi Baris
+    public double determinantByRowReduction() {
+        double det = 1.0;
+        Matrix temp = new Matrix();
+        temp.copy(this);
 
-    // Ekspansi Kofaktor
+        // Ubah matriks temp ke bentuk row eselon.
+        // Loop setiap baris
+        for (int i = 0; i < temp.getRow(); i++) {
+            // Cari nonZeroIndex baris lainnya pada baris bawahnya yang paling kecil dan
+            // Simpan index row pada rowIndex
+            int rowIndex = i, nonZeroMinimumIndex = 999999999;
+            for (int j = i; j < temp.getRow(); j++) {
+                // Hitung kemunculan 0 pertama2 pada suatu baris
+                int countZero = 0;
+                while (temp.getElmt(j, countZero) == 0 && countZero < temp.getCol() - 1) {
+                    countZero += 1;
+                }
 
-    // Hitung Balikan Matriks
+                if (j == i) {
+                    // Iterasi pertama, inisialisasi nonZeroMMinimumIndex
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                } else if (countZero < nonZeroMinimumIndex) {
+                    // Iterasi selanjutnya, cari nilai minimum
+                    rowIndex = j;
+                    nonZeroMinimumIndex = countZero;
+                }
+            }
+
+            // Swap jika indeks row yang sedang ditinjau bukan nol terkecil.
+            if (i != rowIndex) {
+                temp.swapRow(i, rowIndex);
+                det *= -1.0;
+            }
+
+            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
+            double divider = temp.getElmt(i, nonZeroMinimumIndex);
+            if (divider != 0) {
+                // Kasus bukan 0 0 0 0 0 0 0
+                temp.multiplyRowConstant(i, 1 / divider);
+                det *= divider;
+            }
+
+            // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
+            // sedang ditinjau
+            for (int j = i + 1; j < temp.getRow(); j++) {
+                temp.addRow1WithKRow2(j, i, -1 * temp.getElmt(j, nonZeroMinimumIndex));
+            }
+        }
+
+        return det;
+    }
 
 }
