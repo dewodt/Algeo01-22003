@@ -1,9 +1,7 @@
 package program;
 
 import matrix.*;
-import matrix.Error.InvalidMatrixSizeException;
-import matrix.Error.NoInverseMatrixException;
-
+import errors.Errors;
 import java.util.Scanner;
 
 public class SPL {
@@ -56,6 +54,7 @@ public class SPL {
                             "ERROR: Input matriks SPL tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
                     augmentedAb.readMatrixKeyboard();
                 }
+                break;
             case 2:
                 augmentedAb.readMatrixFile();
                 while (augmentedAb.getRow() > augmentedAb.getCol() - 1) {
@@ -63,6 +62,7 @@ public class SPL {
                             "ERROR: Input matriks tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
                     augmentedAb.readMatrixFile();
                 }
+                break;
         }
 
         // Pisah augmented matriks a dan b
@@ -74,31 +74,48 @@ public class SPL {
         switch (methodOption) {
             case 1:
                 System.out.println("GAUSS");
+                break;
             case 2:
                 System.out.println("GAUSS JORDAN");
+                break;
             case 3:
                 System.out.println("Matriks Balikan");
-                solveWithInverse(augmentedAb);
+                try {
+                    Matrix inverseResult = new Matrix();
+                    inverseResult = solveWithInverse(augmentedAb);
+                    inverseResult.printMatrix();
+                } catch (Errors.SPLUnsolvable e) {
+                    e.printStackTrace();
+                }
+                break;
             case 4:
                 System.out.println("Cramer");
+                try {
+                    Matrix cramerResult = new Matrix();
+                    cramerResult = solveWithCramer(augmentedAb);
+                    cramerResult.printMatrix();
+                } catch (Errors.SPLUnsolvable e) {
+                    e.printStackTrace();
+                }
+                break;
         }
     }
 
+    // Solve with Gauss
+
+    // Solve with Gauss Jordan
+
     // Solve with inverse
-    public static void solveWithInverse(Matrix augmented) {
+    public static Matrix solveWithInverse(Matrix augmented) throws Errors.SPLUnsolvable {
         // Metode balikan matriks hanya bisa menyelesaikan SPL dengan solusi unik.
 
-        // Get augmented row & col
-        int augRow = augmented.getRow();
-        int augCol = augmented.getCol();
-
         // Pisah matriks augmented A | b.
-        Matrix augmentedA = new Matrix(augRow, augCol - 1);
-        Matrix augmentedB = new Matrix(augRow, 1);
-        for (int i = 0; i < augRow; i++) {
-            for (int j = 0; j < augCol; j++) {
+        Matrix augmentedA = new Matrix(augmented.getRow(), augmented.getCol() - 1);
+        Matrix augmentedB = new Matrix(augmented.getRow(), 1);
+        for (int i = 0; i < augmented.getRow(); i++) {
+            for (int j = 0; j < augmented.getCol(); j++) {
                 double elmt = augmented.getElmt(i, j);
-                if (j < augCol - 1) {
+                if (j < augmented.getCol() - 1) {
                     // Augmented A (left)
                     augmentedA.setElmt(i, j, elmt);
                 } else {
@@ -110,21 +127,79 @@ public class SPL {
 
         // Jika memiliki inverse matriks
         try {
-            Matrix inverseA = new Matrix(augRow, augCol);
+            Matrix result = new Matrix(augmented.getRow(), 1);
+            Matrix inverseA = new Matrix();
             inverseA = augmentedA.inverseByERO();
 
-            Matrix result = new Matrix(augRow, 1);
             result = Matrix.multiplyMatrix(inverseA, augmentedB);
 
-            result.printMatrix();
-        } catch (NoInverseMatrixException | InvalidMatrixSizeException e) {
+            return result;
+        } catch (Errors.NoInverseMatrixException | Errors.InvalidMatrixSizeException e) {
             System.out.println("Gagal menggunakan metode balikan matriks");
-            System.out.println(e);
+            e.printStackTrace();
+            throw new Errors.SPLUnsolvable(
+                    "SPL Ini tidak bisa diselesaikan dengan metode ini karena tidak memiliki solusi unik.");
         }
+
     }
 
     // Solve with cramer
-    public void solveWithCramer() {
+    public static Matrix solveWithCramer(Matrix augmented) throws Errors.SPLUnsolvable {
+        // Metode cramer hanya bisa SPL dengan solusi unik
 
+        // Pisah matriks augmented A | b.
+        Matrix augmentedA = new Matrix(augmented.getRow(), augmented.getCol() - 1);
+        Matrix augmentedB = new Matrix(augmented.getRow(), 1);
+        for (int i = 0; i < augmented.getRow(); i++) {
+            for (int j = 0; j < augmented.getCol(); j++) {
+                double elmt = augmented.getElmt(i, j);
+                if (j < augmented.getCol() - 1) {
+                    // Augmented A (left)
+                    augmentedA.setElmt(i, j, elmt);
+                } else {
+                    // Augmented b (right)
+                    augmentedB.setElmt(i, 0, elmt);
+                }
+            }
+        }
+
+        try {
+            // Handle determinan 0, throw error
+            double detA = augmentedA.determinantByERO();
+
+            if (detA == 0) {
+                throw new Errors.DeterminanZeroException(
+                        "SPL Tidak dapat diselesaikan dengan metode ini karena determinan = 0.");
+            }
+
+            // Determinan != 0
+            Matrix result = new Matrix(augmented.getRow(), 1);
+
+            for (int i = 0; i < augmentedA.getCol(); i++) {
+                // Inisialisasi
+                Matrix temp = new Matrix();
+                temp.copy(augmentedA);
+
+                // Ubah kolom ke i matriks temp menjadi matriks augmentedB
+                for (int j = 0; j < augmentedA.getRow(); j++) {
+                    double value = augmentedB.getElmt(j, 0);
+                    temp.setElmt(j, i, value);
+                }
+
+                // Hitung nilai solusi xi
+                double detTemp = temp.determinantByERO();
+                double x = detTemp / detA;
+
+                // Simpan ke matriks result
+                result.setElmt(i, 0, x);
+            }
+
+            return result;
+        } catch (Errors.DeterminanZeroException | Errors.InvalidMatrixSizeException e) {
+            System.out.println("Gagal menyelesaikan SPL menggunakan metode cramer.");
+            e.printStackTrace();
+            throw new Errors.SPLUnsolvable(
+                    "SPL Ini tidak bisa diselesaikan dengan metode ini karena tidak memiliki solusi unik.");
+        }
     }
 }

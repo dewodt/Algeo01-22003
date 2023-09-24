@@ -1,9 +1,9 @@
 package matrix;
 
 import java.util.Scanner;
-
 import java.io.FileNotFoundException;
 import java.io.File;
+import errors.Errors;
 
 public class Matrix {
     // Atribut Row, Col, and Matrix
@@ -150,7 +150,12 @@ public class Matrix {
     public void copy(Matrix mIn) {
         this.nRow = mIn.nRow;
         this.nCol = mIn.nCol;
-        this.matrix = mIn.matrix;
+        this.matrix = new double[mIn.nRow][mIn.nCol];
+        for (int i = 0; i < mIn.getRow(); i++) {
+            for (int j = 0; j < mIn.getCol(); j++) {
+                this.matrix[i][j] = mIn.matrix[i][j];
+            }
+        }
     }
 
     // Return matrix tranpose
@@ -187,10 +192,10 @@ public class Matrix {
     }
 
     // Return matrix addition of m1 + m2
-    public static Matrix addMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+    public static Matrix addMatrix(Matrix m1, Matrix m2) throws Errors.InvalidMatrixSizeException {
         // Throw error when size not equal
         if (!m1.isSizeEqual(m2)) {
-            throw new Error.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
+            throw new Errors.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
         }
 
         // If size is equal
@@ -206,10 +211,10 @@ public class Matrix {
     }
 
     // Return matrix substraction of m1 - m2
-    public static Matrix substractMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+    public static Matrix substractMatrix(Matrix m1, Matrix m2) throws Errors.InvalidMatrixSizeException {
         // Throw error when size not equal
         if (!m1.isSizeEqual(m2)) {
-            throw new Error.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
+            throw new Errors.InvalidMatrixSizeException("Ukuran matriks untuk operasi pertambahan harus sama.");
         }
 
         // If size is equal
@@ -225,10 +230,10 @@ public class Matrix {
     }
 
     // Return matrix multiplication
-    public static Matrix multiplyMatrix(Matrix m1, Matrix m2) throws Error.InvalidMatrixSizeException {
+    public static Matrix multiplyMatrix(Matrix m1, Matrix m2) throws Errors.InvalidMatrixSizeException {
         // Throw error when not multiplicable
         if (m1.getCol() != m2.getRow()) {
-            throw new Error.InvalidMatrixSizeException(
+            throw new Errors.InvalidMatrixSizeException(
                     "Ukuran kolom matriks 1 harus sama dengan ukuran kolom matriks 2");
         }
 
@@ -323,8 +328,11 @@ public class Matrix {
             for (int j = i; j < this.getRow(); j++) {
                 // Hitung kemunculan 0 pertama2 pada suatu baris
                 int countZero = 0;
-                while (this.getElmt(j, countZero) == 0 && countZero < this.getCol() - 1) {
+                while (this.getElmt(j, countZero) == 0) {
                     countZero += 1;
+                    if (countZero == this.getCol()) {
+                        break;
+                    }
                 }
 
                 if (j == i) {
@@ -343,17 +351,20 @@ public class Matrix {
                 this.swapRow(i, rowIndex);
             }
 
-            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
-            double divider = getElmt(i, nonZeroMinimumIndex);
-            if (divider != 0) {
-                // Kasus bukan 0 0 0 0 0 0 0
-                this.multiplyRowConstant(i, 1 / divider);
-            }
+            // Kasus Baris tidak 0 semua
+            if (nonZeroMinimumIndex < this.getCol()) {
+                // Dapatkan elemen pembagi
+                double divider = this.getElmt(i, nonZeroMinimumIndex);
 
-            // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
-            // sedang ditinjau
-            for (int j = i + 1; j < getRow(); j++) {
-                this.addRow1WithKRow2(j, i, -1 * this.getElmt(j, nonZeroMinimumIndex));
+                // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
+                // sedang ditinjau
+                for (int j = i + 1; j < this.getRow(); j++) {
+                    double k = -1 * this.getElmt(j, nonZeroMinimumIndex) / divider;
+                    this.addRow1WithKRow2(j, i, k);
+                }
+
+                // Normalisasi baris ke i agar menjadi leading one
+                this.multiplyRowConstant(i, 1 / divider);
             }
         }
     }
@@ -368,8 +379,11 @@ public class Matrix {
             for (int j = i; j < this.getRow(); j++) {
                 // Hitung kemunculan 0 pertama2 pada suatu baris
                 int countZero = 0;
-                while (this.getElmt(j, countZero) == 0 && countZero < this.getCol() - 1) {
+                while (this.getElmt(j, countZero) == 0) {
                     countZero += 1;
+                    if (countZero == this.getCol()) {
+                        break;
+                    }
                 }
 
                 if (j == i) {
@@ -388,28 +402,36 @@ public class Matrix {
                 this.swapRow(i, rowIndex);
             }
 
-            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
-            double divider = this.getElmt(i, nonZeroMinimumIndex);
-            if (divider != 0) {
-                // Kasus bukan 0 0 0 0 0 0 0
-                this.multiplyRowConstant(i, 1 / divider);
-            }
+            // Kasus Baris tidak 0 semua
+            if (nonZeroMinimumIndex < this.getCol()) {
+                // Dapatkan elemen pembagi
+                double divider = this.getElmt(i, nonZeroMinimumIndex);
 
-            // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
-            // sedang ditinjau
-            for (int j = 0; j < this.getRow(); j++) {
-                if (i != j) {
-                    this.addRow1WithKRow2(j, i, -1 * this.getElmt(j, nonZeroMinimumIndex));
+                // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
+                // sedang ditinjau
+                for (int j = 0; j < this.getRow(); j++) {
+                    if (i != j) {
+                        double k = -1 * this.getElmt(j, nonZeroMinimumIndex) / divider;
+                        this.addRow1WithKRow2(j, i, k);
+                    }
                 }
+
+                // Normalisasi baris ke i agar menjadi leading one
+                this.multiplyRowConstant(i, 1 / divider);
             }
         }
     }
 
     // Determinan Reduksi Baris (operasi baris elementer)
-    public double determinantByERO() {
+    public double determinantByERO() throws Errors.InvalidMatrixSizeException {
         double det = 1.0;
         Matrix temp = new Matrix();
         temp.copy(this);
+
+        // Error
+        if (!temp.isSquare()) {
+            throw new Errors.InvalidMatrixSizeException("Determinan matriks hanya terdefinisi untuk matriks persegi.");
+        }
 
         // Ubah matriks temp ke bentuk row eselon.
         // Loop setiap baris
@@ -418,10 +440,13 @@ public class Matrix {
             // Simpan index row pada rowIndex
             int rowIndex = i, nonZeroMinimumIndex = 999999999;
             for (int j = i; j < temp.getRow(); j++) {
-                // Hitung kemunculan 0 pertama2 pada suatu baris
+                // Hitung kemunculan 0 pertama pada suatu baris
                 int countZero = 0;
-                while (temp.getElmt(j, countZero) == 0 && countZero < temp.getCol() - 1) {
+                while (temp.getElmt(j, countZero) == 0) {
                     countZero += 1;
+                    if (countZero == temp.getCol()) {
+                        break;
+                    }
                 }
 
                 if (j == i) {
@@ -441,18 +466,22 @@ public class Matrix {
                 det *= -1.0;
             }
 
-            // Normalisasi dengan elemen bukan 0 pertama pada baris ini.
-            double divider = temp.getElmt(i, nonZeroMinimumIndex);
-            if (divider != 0) {
-                // Kasus bukan 0 0 0 0 0 0 0
-                temp.multiplyRowConstant(i, 1 / divider);
-                det *= divider;
-            }
-
             // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
             // sedang ditinjau
-            for (int j = i + 1; j < temp.getRow(); j++) {
-                temp.addRow1WithKRow2(j, i, -1 * temp.getElmt(j, nonZeroMinimumIndex));
+            if (nonZeroMinimumIndex < temp.getCol()) {
+                // Baris tidak semua bernilai 0
+
+                // Dapatkan pembagi
+                double diagonal = temp.getElmt(i, nonZeroMinimumIndex);
+                for (int j = i + 1; j < temp.getRow(); j++) {
+                    double k = -1 * temp.getElmt(j, nonZeroMinimumIndex) / diagonal;
+                    temp.addRow1WithKRow2(j, i, k);
+                }
+                // Kali nilai diagonal
+                det *= diagonal;
+            } else {
+                // Baris bernilai 0 semua
+                det *= 0;
             }
         }
 
@@ -460,7 +489,7 @@ public class Matrix {
     }
 
     // Inverse matriks eselon baris
-    public Matrix inverseByERO() throws Error.NoInverseMatrixException {
+    public Matrix inverseByERO() throws Errors.NoInverseMatrixException {
         // Ide:
         // 1. Gabungkan matriks menajdi berukuran n x 2n
         // 2. Remudian reduksi eselon form
@@ -468,7 +497,7 @@ public class Matrix {
 
         // Validasi square
         if (!this.isSquare()) {
-            throw new Error.NoInverseMatrixException(
+            throw new Errors.NoInverseMatrixException(
                     "Matriks ini tidak memiliki inverse karena bukan matriks persegi!");
         }
 
@@ -512,7 +541,7 @@ public class Matrix {
 
         // Cek apakah matriks augmented bagian kiri matriks identitas
         if (!augmentedLeft.isIdentity()) {
-            throw new Error.NoInverseMatrixException(
+            throw new Errors.NoInverseMatrixException(
                     "Matriks tidak memiliki inverse karena augmented bagian kiri tidak dapat mencapai matriks identitas");
         }
 
