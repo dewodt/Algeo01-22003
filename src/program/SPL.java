@@ -10,82 +10,108 @@ public class SPL {
         int methodOption, inputOption;
         Scanner scanner = new Scanner(System.in);
 
-        // Input opsi metode penyelesaian SPL
-        System.out.println("============== SPL ===============");
-        System.out.println("Pilih opsi metode penyelesain SPL:");
+        // Tampilan menu metode perhitungan
+        System.out.println("=============  Pilih Metode Perhitungan:  =============");
         System.out.println("1. Gauss");
         System.out.println("2. Gauss - Jordan");
         System.out.println("3. Matriks Balikan");
         System.out.println("4. Cramer");
-        System.out.println("==================================");
 
+        // Input dan validasi metode perhitungan
         methodOption = scanner.nextInt();
+        System.out.println("=======================================================");
         while (methodOption < 1 || methodOption > 4) {
-            System.out.println("==================================");
+            System.out.println("======================  ERROR  ========================");
             System.out.println("Input opsi tidak valid. Opsi harus bernilai bilangan bulat 1 sampai 4 (inklusif).");
             methodOption = scanner.nextInt();
-            System.out.println("==================================");
+            System.out.println("=======================================================");
         }
 
-        // Input opsi pemasukan data
-        System.out.println("============== SPL ===============");
+        // Tampilan menu pemilihan metode
+        System.out.println("================  Pilih Metode Input:  ================");
         System.out.println("Pilih opsi masukan matriks:");
         System.out.println("1. Keyboard");
         System.out.println("2. File");
-        System.out.println("==================================");
 
+        // Input dan validasi metode input
         inputOption = scanner.nextInt();
+        System.out.println("=======================================================");
         while (inputOption < 1 || inputOption > 2) {
-            System.out.println("==================================");
+            System.out.println("======================  ERROR  ========================");
             System.out.println("Input opsi tidak valid. Opsi harus bernilai bilangan bulat 1 sampai 2 (inklusif).");
             inputOption = scanner.nextInt();
-            System.out.println("==================================");
+            System.out.println("=======================================================");
         }
 
         // Input nilai matriks
         Matrix augmentedAb = new Matrix();
-        System.out.println("==================================");
+        System.out.println("=======================================================");
         System.out.println("Masukkan nilai matriks augmented A | b dimana Ax = b");
         switch (inputOption) {
             case 1:
                 augmentedAb.readMatrixKeyboard();
+                System.out.println("=======================================================");
+
                 while (augmentedAb.getRow() > augmentedAb.getCol() - 1) {
+                    System.out.println("======================  ERROR  ========================");
                     System.out.println(
                             "ERROR: Input matriks SPL tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
                     augmentedAb.readMatrixKeyboard();
+                    System.out.println("=======================================================");
                 }
                 break;
             case 2:
                 augmentedAb.readMatrixFile();
+                System.out.println("=======================================================");
+
                 while (augmentedAb.getRow() > augmentedAb.getCol() - 1) {
+                    System.out.println("======================  ERROR  ========================");
                     System.out.println(
                             "ERROR: Input matriks tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
                     augmentedAb.readMatrixFile();
+                    System.out.println("=======================================================");
                 }
                 break;
         }
 
         scanner.close();
-        System.out.println("==================================");
 
         // Solve SPL
         switch (methodOption) {
             case 1:
+                // Calculate
                 System.out.println("GAUSS");
                 String gaussResult = solveWithGauss(augmentedAb);
+
+                // Print result
+                System.out.println("======================  RESULT  =======================");
                 System.out.println(gaussResult);
+                System.out.println("=======================================================");
+
                 break;
             case 2:
+                // Calculate
                 System.out.println("GAUSS JORDAN");
                 String gaussJordanResult = solveWithGaussJordan(augmentedAb);
+
+                // Print result
+                System.out.println("======================  RESULT  =======================");
                 System.out.println(gaussJordanResult);
+                System.out.println("=======================================================");
+
                 break;
             case 3:
                 System.out.println("Matriks Balikan");
                 try {
+                    // Calculate
                     Matrix inverseResult = new Matrix();
                     inverseResult = solveWithInverse(augmentedAb);
+
+                    // Print result
+                    System.out.println("======================  RESULT  =======================");
                     inverseResult.printMatrix();
+                    System.out.println("=======================================================");
+
                 } catch (Errors.SPLUnsolvable e) {
                     e.printStackTrace();
                 }
@@ -93,9 +119,15 @@ public class SPL {
             case 4:
                 System.out.println("Cramer");
                 try {
+                    // Calculate
                     Matrix cramerResult = new Matrix();
                     cramerResult = solveWithCramer(augmentedAb);
+
+                    // Print result
+                    System.out.println("======================  RESULT  =======================");
                     cramerResult.printMatrix();
+                    System.out.println("=======================================================");
+
                 } catch (Errors.SPLUnsolvable e) {
                     e.printStackTrace();
                 }
@@ -524,7 +556,7 @@ public class SPL {
         try {
             Matrix result = new Matrix(augmented.getRow(), 1);
             Matrix inverseA = new Matrix();
-            inverseA = augmentedA.inverseByERO();
+            inverseA = augmentedA.getInverseByERO();
 
             result = Matrix.multiplyMatrix(inverseA, augmentedB);
 
@@ -560,7 +592,7 @@ public class SPL {
 
         try {
             // Handle determinan 0, throw error
-            double detA = augmentedA.determinantByERO();
+            double detA = augmentedA.getDeterminantByERO();
 
             if (detA == 0) {
                 throw new Errors.DeterminanZeroException(
@@ -582,7 +614,7 @@ public class SPL {
                 }
 
                 // Hitung nilai solusi xi
-                double detTemp = temp.determinantByERO();
+                double detTemp = temp.getDeterminantByERO();
                 double x = detTemp / detA;
 
                 // Simpan ke matriks result
