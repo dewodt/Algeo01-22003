@@ -65,8 +65,6 @@ public class SPL {
                 break;
         }
 
-        // Pisah augmented matriks a dan b
-
         scanner.close();
         System.out.println("==================================");
 
@@ -74,6 +72,8 @@ public class SPL {
         switch (methodOption) {
             case 1:
                 System.out.println("GAUSS");
+                String gaussResult = solveWithGauss(augmentedAb);
+                System.out.println(gaussResult);
                 break;
             case 2:
                 System.out.println("GAUSS JORDAN");
@@ -104,6 +104,212 @@ public class SPL {
     }
 
     // Solve with Gauss
+    public static String solveWithGauss(Matrix aug) {
+        // Lakukan substitusi balik dulu.
+        // Substitusi balik = nge-0in angka diatas leading one.
+        Matrix subsBalik = new Matrix();
+        subsBalik.copy(aug);
+        subsBalik.transformToEchelonForm();
+
+        for (int i = 0; i < subsBalik.getRow(); i++) {
+            int leadingOneIndex = 0;
+            while (leadingOneIndex < subsBalik.getCol() - 1 && subsBalik.getElmt(i, leadingOneIndex) == 0) {
+                leadingOneIndex += 1;
+            }
+
+            // Kasus 0 semua
+            if (leadingOneIndex == subsBalik.getCol() - 1) {
+                continue;
+            }
+
+            // Kasus ada leading one ketemu, substitusikan variable2 atasnya dengan cara
+            // menambahkan rownya.
+            for (int j = i - 1; j >= 0; j--) {
+                subsBalik.addRow1WithKRow2(j, i, -1 * subsBalik.getElmt(j, leadingOneIndex));
+            }
+        }
+
+        // Pisah matriks aug A | b.
+        Matrix augA = new Matrix(subsBalik.getRow(), subsBalik.getCol() - 1);
+        Matrix augB = new Matrix(subsBalik.getRow(), 1);
+        for (int i = 0; i < subsBalik.getRow(); i++) {
+            for (int j = 0; j < subsBalik.getCol(); j++) {
+                double elmt = subsBalik.getElmt(i, j);
+                if (j < subsBalik.getCol() - 1) {
+                    // Augmented A (left)
+                    augA.setElmt(i, j, elmt);
+                } else {
+                    // Augmented b (right)
+                    augB.setElmt(i, 0, elmt);
+                }
+            }
+        }
+
+        // SOLUSI TIDAK ADA
+        // 0 0 ... 0 | != 0
+        boolean noSolution = true;
+        for (int i = 0; i < subsBalik.getCol(); i++) {
+            // Last row of augmented A is not all zero
+            if (((i < subsBalik.getCol() - 1) && subsBalik.getElmt(subsBalik.getRow() - 1, i) != 0)
+                    || ((i == subsBalik.getCol() - 1) && subsBalik.getElmt(subsBalik.getRow() - 1, i) == 0)) {
+                noSolution = false;
+            }
+        }
+        if (noSolution) {
+            return "SPL ini tidak memiliki solusi sama sekali.";
+        }
+
+        // SOLUSI UNIK
+        // Handle solusi unik = Square and All diagonal one
+        // Cek apakah diagonal augmentedA bernilai 1 semua (leading ones)
+        if (augA.isSquare() && augA.isIdentity()) {
+            String msg = "";
+            for (int i = 0; i < augB.getRow(); i++) {
+                msg += String.format("x_%d = %.2f\n", i + 1, augB.getElmt(i, 0));
+            }
+            return msg;
+        }
+
+        // SOLUSI BANYAK
+        String msg = "";
+
+        // Handle kasus suatu kolom 0 semua xi = ti
+        for (int j = 0; j < augA.getCol(); j++) {
+            boolean allZero = true;
+            for (int i = 0; i < augA.getRow(); i++) {
+                if (augA.getElmt(i, j) != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+
+            if (allZero) {
+                msg += String.format("x_%d = t_%d\n", j + 1, j + 1);
+            }
+        }
+
+        for (int i = 0; i < augA.getRow(); i++) {
+            // Get leading one index
+            int leadingOneIndex = 0;
+            while (augA.getElmt(i, leadingOneIndex) == 0) {
+                leadingOneIndex += 1;
+                if (leadingOneIndex == augA.getCol()) {
+                    break;
+                }
+            }
+
+            // Tidak ada leading one
+            if (leadingOneIndex == augA.getCol()) {
+                continue;
+            }
+
+            // Ada leading 1
+            // String definisi variable sebagai parameter, misalnya x_i = t_i
+            for (int j = leadingOneIndex + 1; j < augA.getCol(); j++) {
+                if (augA.getElmt(i, j) == 0) {
+                    continue;
+                }
+
+                if (i == 0) {
+                    msg += String.format("x_%d = t_%d\n", j + 1, j + 1);
+                } else if (i > 0) {
+                    boolean noParamPrinted = true;
+                    for (int k = i - 1; k >= 0; k--) {
+                        if (augA.getElmt(k, j) != 0) {
+                            noParamPrinted = false;
+                        }
+                    }
+                    if (noParamPrinted) {
+                        msg += String.format("x_%d = t_%d\n", j + 1, j + 1);
+                    }
+                }
+            }
+
+            // String persamaan menggunakan parametrik2 yang didefinisikan sebelumnya
+            // misalnya x1 = 2 + 2t_1 + 2t_2 + ...
+            msg += String.format("x_%d = ", leadingOneIndex + 1);
+
+            // Cek apakah setelah leading one ada 0 atau tidak
+            boolean allZeroAfterLeadingOne = true;
+            for (int j = leadingOneIndex + 1; j < augA.getCol(); j++) {
+                if (augA.getElmt(i, j) != 0) {
+                    allZeroAfterLeadingOne = false;
+                    break;
+                }
+            }
+
+            double augBElmt = augB.getElmt(i, 0);
+            boolean isFirst = true;
+            // Semua after leading A 0 di augA (tidak ada parametrik), cetak augB jika
+            // nilainya 0.
+            if (allZeroAfterLeadingOne) {
+                msg += String.format("%.2f", augBElmt);
+                isFirst = false;
+            }
+            // Ada bilangan bukan 0 setelah leading one (ada parametrik), jangan cetak augB
+            // jika nilainya 0.
+            if (!allZeroAfterLeadingOne && augBElmt != 0) {
+                msg += String.format("%.2f", augBElmt);
+                isFirst = false;
+            }
+
+            // Parametrik
+            // Pakai t_i karena mengingat karakter huruf terbatas.
+            for (int j = leadingOneIndex + 1; j < augA.getCol(); j++) {
+                double elmt = augA.getElmt(i, j);
+
+                if (elmt == 0) {
+                    continue;
+                }
+
+                if (isFirst) {
+                    // Iterasi pertama dan elemen augB = 0
+                    if (elmt != 1.0 && elmt != -1.0) {
+                        // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
+                        // (tanda berubah jika pindah ruas)
+                        if (elmt > 0) {
+                            msg += String.format("%.2f", -1 * elmt);
+                        } else {
+                            msg += String.format("%.2f", -1 * elmt);
+                        }
+                    } else {
+                        // Jika koefisien satu, cetak tandanya saja
+                        // (tanda berubah jika pindah ruas)
+                        if (elmt == 1.0) {
+                            msg += "-";
+                        }
+                    }
+
+                    msg += String.format("t_%d", j + 1);
+                    isFirst = false;
+                } else {
+                    // Iterasi selanjutnya
+                    if (elmt != 1.0 && elmt != -1.0) {
+                        // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
+                        // (tanda berubah jika pindah ruas)
+                        if (elmt > 0) {
+                            msg += String.format(" - %.2f", elmt);
+                        } else {
+                            msg += String.format(" + %.2f", -1 * elmt);
+                        }
+                    } else {
+                        // Jika koefisien satu atau -1, cetak tandanya saja
+                        // (tanda berubah jika pindah ruas)
+                        if (elmt == 1.0) {
+                            msg += " - ";
+                        } else {
+                            msg += " + ";
+                        }
+                    }
+                    msg += String.format("t_%d", j + 1);
+                }
+            }
+            msg += "\n";
+        }
+        msg += "Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.";
+
+        return msg;
+    }
 
     // Solve with Gauss Jordan
     public static String solveWithGaussJordan(Matrix aug) {
