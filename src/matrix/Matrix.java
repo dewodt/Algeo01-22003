@@ -305,10 +305,13 @@ public class Matrix {
     }
 
     // Kali matriks dengan k
-    public void multiplyConstant(double k) {
+    public Matrix multiplyConstant(double k) {
+        Matrix result = new Matrix();
+        result.copy(this);
         for (int i = 0; i < this.getRow(); i++) {
-            multiplyRowConstant(i, k);
+            result.multiplyRowConstant(i, k);
         }
+        return result;
     }
 
     // Tambahkan baris 1 dengan k * baris 2
@@ -423,7 +426,7 @@ public class Matrix {
     }
 
     // Determinan Reduksi Baris (operasi baris elementer)
-    public double determinantByERO() throws Errors.InvalidMatrixSizeException {
+    public double getDeterminantByERO() throws Errors.InvalidMatrixSizeException {
         double det = 1.0;
         Matrix temp = new Matrix();
         temp.copy(this);
@@ -489,7 +492,7 @@ public class Matrix {
     }
 
     // Inverse matriks eselon baris
-    public Matrix inverseByERO() throws Errors.NoInverseMatrixException {
+    public Matrix getInverseByERO() throws Errors.NoInverseMatrixException {
         // Ide:
         // 1. Gabungkan matriks menajdi berukuran n x 2n
         // 2. Remudian reduksi eselon form
@@ -549,14 +552,12 @@ public class Matrix {
         return augmentedRight;
     }
 
-    //
     // Determinan dengan Cofactor
-    public double determinantByCofac() throws Errors.NoInverseMatrixException {
+    public double getDeterminantByCofac() throws Errors.InvalidMatrixSizeException {
 
         // Validasi square
         if (!this.isSquare()) {
-            throw new Errors.NoInverseMatrixException(
-                    "Matriks ini tidak memiliki inverse karena bukan matriks persegi!");
+            throw new Errors.InvalidMatrixSizeException("Determinan matriks hanya terdefinisi untuk matriks persegi.");
         }
 
         Matrix temp = new Matrix();
@@ -600,14 +601,14 @@ public class Matrix {
                 }
                 // Rekursi untuk mencari determinan dari matrix cofactor
                 // Gunakan baris 0 (pertama) saja
-                det += var * temp.getElmt(0, i) * coFac.determinantByCofac();
+                det += var * temp.getElmt(0, i) * coFac.getDeterminantByCofac();
                 var *= (-1);
             }
         }
         return det;
     }
 
-    public double findMinor(int row, int col) throws Errors.InvalidMatrixSizeException {
+    public double getMinor(int row, int col) throws Errors.InvalidMatrixSizeException {
         try {
             Matrix temp = new Matrix();
             temp.copy(this);
@@ -646,17 +647,15 @@ public class Matrix {
                 }
             }
             // Cari determinan dari minor yang telah kita buat
-            double determinant;
             // Jika matrix memiliki minor, cari determinan matriks minor dengan metode
             // cofactor
-            determinant = minor.determinantByCofac();
+            double determinant = minor.getDeterminantByCofac();
             return determinant;
-        } catch (Errors.NoInverseMatrixException e) {
+        } catch (Errors.InvalidMatrixSizeException e) {
             // Kirim pesan error jika amtrix tidak memiliki minor
             System.out.println("Matrix tidak memiliki minor.");
             e.printStackTrace();
             throw new Errors.InvalidMatrixSizeException("Matrix tidak memiliki Minor karena tidak persegi.");
-
         }
     }
 
@@ -671,7 +670,7 @@ public class Matrix {
             for (int i = 0; i < temp.getRow(); i++) {
                 for (int j = 0; j < temp.getCol(); j++) {
                     // Transform minor ke cofactor dengan fungsi yang telah kita buat tadi
-                    coFac.setElmt(i, j, (temp.findMinor(i, j) * var));
+                    coFac.setElmt(i, j, (temp.getMinor(i, j) * var));
                     var *= -1;
                 }
             }
@@ -688,11 +687,9 @@ public class Matrix {
     public Matrix getAdjoint() throws Errors.InvalidMatrixSizeException {
         try {
             // Gunakan fungsi getCofactor dan transformToTranpose untuk adjoinnya
-            Matrix temp = new Matrix();
-            temp.copy(this);
-            temp.getCofactor();
-            temp = temp.transpose();
-            return temp;
+            Matrix adjoin = new Matrix();
+            adjoin = this.getCofactor().transpose();
+            return adjoin;
         } catch (Errors.InvalidMatrixSizeException e) {
             // Kirim pesan error jika amtrix tidak memiliki invers
             System.out.println("Matrix tidak memiliki minor.");
@@ -702,43 +699,24 @@ public class Matrix {
         }
     }
 
-    public Matrix inverseByAdjoint() throws Errors.InvalidMatrixSizeException {
+    public Matrix getInverseByAdjoint() throws Errors.NoInverseMatrixException {
         try {
-            // Inisialisasi matrix temp/copyan
-            Matrix temp = new Matrix();
-            temp.copy(this);
-            if (temp.determinantByCofac() == 0) {
-                // Kalau ga ada determinan, maka ga ada balikan
-                System.out.println("Matrix tidak memiliki Inverse.");
-                return null;
+            // Kalau ga ada determinan, maka ga ada balikan
+            if (this.getDeterminantByCofac() == 0) {
+                throw new Errors.DeterminanZeroException("Tidak bisa menghitung inverse dengan determinan 0.");
             }
 
-            else {
-                // Inisialisasi matrix inverse dan matrix adjoin
-                Matrix inverse = new Matrix(temp.getRow(), temp.getCol());
-                Matrix adjoin = new Matrix();
+            // Inisialisasi matrix inverse dan matrix adjoin
+            Matrix inverse = new Matrix(this.getRow(), this.getCol());
+            double det = this.getDeterminantByCofac();
 
-                // Copy dan adjoinkan matrix temp/copyan
-                adjoin.copy(this);
-                adjoin.getAdjoint();
-                double det = temp.determinantByCofac();
+            inverse = this.getAdjoint().multiplyConstant(1 / det);
 
-                for (int i = 0; i < temp.getRow(); i++) {
-                    for (int j = 0; j < temp.getCol(); j++) {
-                        // Inisialisasi inverse dengan hasil adjoin dibagi determinan
-                        inverse.setElmt(i, j, (adjoin.getElmt(i, j) / det));
-                    }
-                }
-                // salin nilai matrix asli ke matrix inverse
-                return inverse;
-
-            }
-        } catch (Errors.InvalidMatrixSizeException | Errors.NoInverseMatrixException e) {
+            return inverse;
+        } catch (Errors.InvalidMatrixSizeException | Errors.DeterminanZeroException e) {
             // Kirim pesan error jika amtrix tidak memiliki invers
-            System.out.println("Matrix tidak memiliki minor.");
             e.printStackTrace();
-            throw new Errors.InvalidMatrixSizeException("Matrix tidak memiliki Minor karena tidak persegi.");
-
+            throw new Errors.NoInverseMatrixException("Matrix tidak memiliki inverse karena determinan = 0.");
         }
     }
 }

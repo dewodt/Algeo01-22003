@@ -80,7 +80,6 @@ public class SPL {
         switch (methodOption) {
             case 1:
                 // Calculate
-                System.out.println("GAUSS");
                 String gaussResult = solveWithGauss(augmentedAb);
 
                 // Print result
@@ -91,7 +90,6 @@ public class SPL {
                 break;
             case 2:
                 // Calculate
-                System.out.println("GAUSS JORDAN");
                 String gaussJordanResult = solveWithGaussJordan(augmentedAb);
 
                 // Print result
@@ -101,7 +99,6 @@ public class SPL {
 
                 break;
             case 3:
-                System.out.println("Matriks Balikan");
                 try {
                     // Calculate
                     Matrix inverseResult = new Matrix();
@@ -113,11 +110,12 @@ public class SPL {
                     System.out.println("=======================================================");
 
                 } catch (Errors.SPLUnsolvable e) {
+                    System.out.println("======================  ERROR  ========================");
                     e.printStackTrace();
+                    System.out.println("=======================================================");
                 }
                 break;
             case 4:
-                System.out.println("Cramer");
                 try {
                     // Calculate
                     Matrix cramerResult = new Matrix();
@@ -129,7 +127,9 @@ public class SPL {
                     System.out.println("=======================================================");
 
                 } catch (Errors.SPLUnsolvable e) {
+                    System.out.println("======================  ERROR  ========================");
                     e.printStackTrace();
+                    System.out.println("=======================================================");
                 }
                 break;
         }

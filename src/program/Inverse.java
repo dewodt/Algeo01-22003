@@ -55,7 +55,6 @@ public class Inverse {
                 try {
                     // Calculate
                     Matrix inverse = new Matrix();
-                    System.out.println("Inverse matriks:");
                     inverse = matrix.getInverseByERO();
 
                     // Print result
@@ -74,7 +73,6 @@ public class Inverse {
                 try {
                     // Calculate
                     Matrix inverse = new Matrix();
-                    System.out.println("Inverse matriks:");
                     inverse = matrix.getInverseByAdjoint();
 
                     // Print result
