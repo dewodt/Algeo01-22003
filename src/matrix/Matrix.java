@@ -9,6 +9,7 @@ public class Matrix {
     // Atribut Row, Col, and Matrix
     int nRow, nCol;
     double[][] matrix;
+    Scanner keyboardReader = new Scanner(System.in);
 
     // Konstruktor
     // Inisialisasi kosong, diisi baru saat readMatrix.
@@ -27,8 +28,6 @@ public class Matrix {
 
     // Baca input matriks melalui keyboard
     public void readMatrixKeyboard() {
-        Scanner keyboardReader = new Scanner(System.in);
-
         // Input row matriks
         System.out.println("Masukkan jumlah baris matriks");
         this.nRow = keyboardReader.nextInt();
@@ -56,8 +55,6 @@ public class Matrix {
             }
         }
 
-        // Close reader
-        keyboardReader.close();
     }
 
     // Baca input matriks melalui file di directory test/input/[namafile]
@@ -65,10 +62,8 @@ public class Matrix {
         String tempRow, fileName;
 
         // Input nama file pada directory test/input
-        Scanner keyboardReader = new Scanner(System.in);
         System.out.println("Masukkan nama file pada directory test/input lengkap dengan extensionnya:");
         fileName = keyboardReader.nextLine();
-        keyboardReader.close();
 
         try {
             // Read file
@@ -106,7 +101,6 @@ public class Matrix {
             System.out.println("Terjadi sebuah kesalahan dalam membaca file.");
             e.printStackTrace();
         }
-
     }
 
     // Cetak matriks

@@ -42,7 +42,8 @@ public class Main {
                 // foo
                 break;
             case 5:
-                // foo
+                // Bicubic spline
+                BicubicSpline.app();
                 break;
             case 6:
                 // foo
