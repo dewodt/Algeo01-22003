@@ -101,7 +101,6 @@ public class Matrix {
             System.out.println("Terjadi sebuah kesalahan dalam membaca file.");
             e.printStackTrace();
         }
-
     }
 
     // Cetak matriks

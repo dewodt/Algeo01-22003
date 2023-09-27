@@ -1,6 +1,8 @@
 package program;
 
 import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.Math;
 import matrix.*;
 import errors.Errors;
@@ -26,8 +28,8 @@ public class BicubicSpline {
             System.out.println("=======================================================");
         }
 
-        Matrix functionMatrix = new Matrix();
-        double approxX, approxY;
+        Matrix functionMatrix = new Matrix(4, 4);
+        double approxX = 0.0, approxY = 0.0;
 
         // Input dan validasi masukan matrix
         switch (inputMethod) {
@@ -50,8 +52,9 @@ public class BicubicSpline {
 
                 // Input nilai x, y untuk ditaksir
                 System.out.println("=======================================================");
-                System.out.println("Input nilai x dan y yang ingin ditaksir dalam rentang [0, 1]!");
+                System.out.println("Input nilai x yang ingin ditaksir dalam rentang [0, 1]!");
                 approxX = reader.nextDouble();
+                System.out.println("Input nilai y yang ingin ditaksir dalam rentang [0, 1]!");
                 approxY = reader.nextDouble();
                 System.out.println("=======================================================");
                 while (approxX < 0 || approxX > 1 || approxY < 0 || approxX > 1) {
@@ -66,21 +69,37 @@ public class BicubicSpline {
 
             // FILE
             case 2:
-                // File
-                // matrix.readMatrixFile();
-                // while (matrix.getRow() != 4 || matrix.getCol() != 4) {
-                // System.out.println("====================== ERROR ========================");
-                // System.out.println("Ukuran input matriks bicubic spline harus bernilai
-                // 4x4!");
-                // matrix.readMatrixFile();
-                // System.out.println("=======================================================");
-                // }
-                approxX = 5.0;
-                approxY = 2.0;
+                // Input nama file pada directory test/input
+                System.out.println("Masukkan nama file pada directory test/input lengkap dengan extensionnya:");
+                reader.nextLine();
+                String fileName = reader.nextLine();
+
+                // Tidak bisa matrix.readFile() langsung karena format file berisi matriks dan
+                // juga x dan y yang ingin diapproksimasikan (digabung)
+                try {
+                    // Read file
+                    File fileObj = new File("test/input/" + fileName);
+
+                    // Get matrix data
+                    Scanner fileReader = new Scanner(fileObj);
+                    for (int i = 0; i < 4; i++) {
+                        for (int j = 0; j < 4; j++) {
+                            double value = fileReader.nextDouble();
+                            functionMatrix.setElmt(i, j, value);
+                        }
+                    }
+
+                    // Get approxX and approxY data.
+                    approxX = fileReader.nextDouble();
+                    approxY = fileReader.nextDouble();
+
+                    // Close file reader
+                    fileReader.close();
+                } catch (FileNotFoundException e) {
+                    System.out.println("Terjadi sebuah kesalahan dalam membaca file.");
+                    e.printStackTrace();
+                }
                 break;
-            default:
-                approxX = 2.0;
-                approxY = 3.0;
         }
 
         // Buat matriks X yang berukuran 16 x 16 (karena menggunakan 4 titik).
