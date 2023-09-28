@@ -39,7 +39,7 @@ public class Main {
                 Inverse.app();
                 break;
             case 4:
-                // foo
+                Interpolasi.app();
                 break;
             case 5:
                 // Bicubic spline
