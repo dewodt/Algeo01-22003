@@ -108,8 +108,8 @@ public class Matrix {
         for (int i = 0; i < this.nRow; i++) {
             for (int j = 0; j < this.nCol; j++) {
                 // Each element
-                System.out.print(this.matrix[i][j]);
-
+                String elmt = String.format("%.4f", this.matrix[i][j]);
+                System.out.print(elmt);
                 // Space
                 if (j != this.nCol - 1) {
                     System.out.print(" ");
@@ -298,12 +298,29 @@ public class Matrix {
         }
     }
 
+    // Bagi sebuah baris row dengan k
+    public void divideRowConstant(int row, double k) {
+        for (int j = 0; j < this.getCol(); j++) {
+            this.matrix[row][j] /= k;
+        }
+    }
+
     // Kali matriks dengan k
     public Matrix multiplyConstant(double k) {
         Matrix result = new Matrix();
         result.copy(this);
         for (int i = 0; i < this.getRow(); i++) {
             result.multiplyRowConstant(i, k);
+        }
+        return result;
+    }
+
+    // Bagi matriks dengan k
+    public Matrix divideConstant(double k) {
+        Matrix result = new Matrix();
+        result.copy(this);
+        for (int i = 0; i < this.getRow(); i++) {
+            result.divideRowConstant(i, k);
         }
         return result;
     }
@@ -353,15 +370,15 @@ public class Matrix {
                 // Dapatkan elemen pembagi
                 double divider = this.getElmt(i, nonZeroMinimumIndex);
 
+                // Normalisasi baris ke i agar menjadi leading one
+                this.divideRowConstant(i, divider);
+
                 // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
                 // sedang ditinjau
                 for (int j = i + 1; j < this.getRow(); j++) {
-                    double k = -1 * this.getElmt(j, nonZeroMinimumIndex) / divider;
+                    double k = -1 * this.getElmt(j, nonZeroMinimumIndex);
                     this.addRow1WithKRow2(j, i, k);
                 }
-
-                // Normalisasi baris ke i agar menjadi leading one
-                this.multiplyRowConstant(i, 1 / divider);
             }
         }
     }
@@ -404,17 +421,17 @@ public class Matrix {
                 // Dapatkan elemen pembagi
                 double divider = this.getElmt(i, nonZeroMinimumIndex);
 
+                // Normalisasi baris ke i agar menjadi leading one
+                this.divideRowConstant(i, divider);
+
                 // Loop kolom indeks nonZeroMinimumIndeks untuk meng-0-kan bagian bawah yang
                 // sedang ditinjau
                 for (int j = 0; j < this.getRow(); j++) {
                     if (i != j) {
-                        double k = -1 * this.getElmt(j, nonZeroMinimumIndex) / divider;
+                        double k = -1 * this.getElmt(j, nonZeroMinimumIndex);
                         this.addRow1WithKRow2(j, i, k);
                     }
                 }
-
-                // Normalisasi baris ke i agar menjadi leading one
-                this.multiplyRowConstant(i, 1 / divider);
             }
         }
     }
@@ -704,7 +721,7 @@ public class Matrix {
             Matrix inverse = new Matrix(this.getRow(), this.getCol());
             double det = this.getDeterminantByCofac();
 
-            inverse = this.getAdjoint().multiplyConstant(1 / det);
+            inverse = this.getAdjoint().divideConstant(det);
 
             return inverse;
         } catch (Errors.InvalidMatrixSizeException | Errors.DeterminanZeroException e) {
