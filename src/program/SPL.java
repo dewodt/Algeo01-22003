@@ -51,26 +51,10 @@ public class SPL {
             case 1:
                 augmentedAb.readMatrixKeyboard();
                 System.out.println("=======================================================");
-
-                while (augmentedAb.getRow() > augmentedAb.getCol() - 1) {
-                    System.out.println("======================  ERROR  ========================");
-                    System.out.println(
-                            "ERROR: Input matriks SPL tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
-                    augmentedAb.readMatrixKeyboard();
-                    System.out.println("=======================================================");
-                }
                 break;
             case 2:
                 augmentedAb.readMatrixFile();
                 System.out.println("=======================================================");
-
-                while (augmentedAb.getRow() > augmentedAb.getCol() - 1) {
-                    System.out.println("======================  ERROR  ========================");
-                    System.out.println(
-                            "ERROR: Input matriks tidak valid. Persamaan n variabel seharusnya memiliki paling banyak n persamaan.");
-                    augmentedAb.readMatrixFile();
-                    System.out.println("=======================================================");
-                }
                 break;
         }
 
@@ -179,12 +163,32 @@ public class SPL {
 
         // SOLUSI TIDAK ADA
         // 0 0 ... 0 | != 0
-        boolean noSolution = true;
-        for (int i = 0; i < subsBalik.getCol(); i++) {
-            // Last row of augmented A is not all zero
-            if (((i < subsBalik.getCol() - 1) && subsBalik.getElmt(subsBalik.getRow() - 1, i) != 0)
-                    || ((i == subsBalik.getCol() - 1) && subsBalik.getElmt(subsBalik.getRow() - 1, i) == 0)) {
-                noSolution = false;
+        // Update: Harus bisa handle kasus jumlah persamaan lebih banyak dari pada
+        // jumlah variabel
+        // Jika jumlah persamaan lebih banyak dari pada jumlah variabel, harus dilakukan
+        // pengecekan bahwa (jmlh pers - jmlh var) terakhir harus bernilai 0000000. Jika
+        // tidak, maka
+        boolean noSolution = false;
+        int countAllZeroAugARow = augA.getRow();
+        for (int i = 0; i < aug.getRow(); i++) {
+            boolean allZero = true;
+            // Cek Aug A apakah 0 semua pada rownya
+            for (int j = 0; j < augA.getCol(); j++) {
+                if (augA.getElmt(i, j) != 0.0) {
+                    allZero = false;
+                    break;
+                }
+            }
+
+            // Jika semua 0 pada augA, harus dilakukan pengecekan pada augB.
+            // Jika augB 0, maka lanjut (aman).
+            // Jika augB tidak sama dengan 0, maka tidak akan ada solusi.
+            if (allZero) {
+                countAllZeroAugARow -= 1;
+                if (augB.getElmt(i, 0) != 0) {
+                    noSolution = true;
+                    // Jangan break, sekalian menghitung countAllZeroAugRow.
+                }
             }
         }
         if (noSolution) {
@@ -194,10 +198,25 @@ public class SPL {
         // SOLUSI UNIK
         // Handle solusi unik = Square and All diagonal one
         // Cek apakah diagonal augmentedA bernilai 1 semua (leading ones)
-        if (augA.isSquare() && augA.isIdentity()) {
+        // Dapatkan matriks tanpa baris 0000 aug A
+        Matrix augAWithout0Rows = new Matrix(countAllZeroAugARow, augA.getCol());
+        for (int i = 0; i < augAWithout0Rows.getRow(); i++) {
+            for (int j = 0; j < augAWithout0Rows.getCol(); j++) {
+                double value = augA.getElmt(i, j);
+                augAWithout0Rows.setElmt(i, j, value);
+            }
+        }
+
+        // Jika identitas, memiloiki solusi
+        if (augAWithout0Rows.isSquare() && augAWithout0Rows.isIdentity()) {
             String msg = "";
-            for (int i = 0; i < augB.getRow(); i++) {
-                msg += String.format("x_%d = %.2f\n", i + 1, augB.getElmt(i, 0));
+            for (int i = 0; i < augAWithout0Rows.getRow(); i++) {
+                msg += String.format("x_%d = %.4f", i + 1, augB.getElmt(i, 0));
+
+                // If not laast, add new line
+                if (i != augAWithout0Rows.getRow() - 1) {
+                    msg += "\n";
+                }
             }
             return msg;
         }
@@ -275,13 +294,13 @@ public class SPL {
             // Semua after leading A 0 di augA (tidak ada parametrik), cetak augB jika
             // nilainya 0.
             if (allZeroAfterLeadingOne) {
-                msg += String.format("%.2f", augBElmt);
+                msg += String.format("%.4f", augBElmt);
                 isFirst = false;
             }
             // Ada bilangan bukan 0 setelah leading one (ada parametrik), jangan cetak augB
             // jika nilainya 0.
             if (!allZeroAfterLeadingOne && augBElmt != 0) {
-                msg += String.format("%.2f", augBElmt);
+                msg += String.format("%.4f", augBElmt);
                 isFirst = false;
             }
 
@@ -300,9 +319,9 @@ public class SPL {
                         // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
                         // (tanda berubah jika pindah ruas)
                         if (elmt > 0) {
-                            msg += String.format("%.2f", -1 * elmt);
+                            msg += String.format("%.4f", -1 * elmt);
                         } else {
-                            msg += String.format("%.2f", -1 * elmt);
+                            msg += String.format("%.4f", -1 * elmt);
                         }
                     } else {
                         // Jika koefisien satu, cetak tandanya saja
@@ -320,9 +339,9 @@ public class SPL {
                         // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
                         // (tanda berubah jika pindah ruas)
                         if (elmt > 0) {
-                            msg += String.format(" - %.2f", elmt);
+                            msg += String.format(" - %.4f", elmt);
                         } else {
-                            msg += String.format(" + %.2f", -1 * elmt);
+                            msg += String.format(" + %.4f", -1 * elmt);
                         }
                     } else {
                         // Jika koefisien satu atau -1, cetak tandanya saja
@@ -368,12 +387,32 @@ public class SPL {
 
         // SOLUSI TIDAK ADA
         // 0 0 ... 0 | != 0
-        boolean noSolution = true;
-        for (int i = 0; i < aug.getCol(); i++) {
-            // Last row of augmented A is not all zero
-            if (((i < aug.getCol() - 1) && reduced.getElmt(aug.getRow() - 1, i) != 0)
-                    || ((i == aug.getCol() - 1) && reduced.getElmt(aug.getRow() - 1, i) == 0)) {
-                noSolution = false;
+        // Update: Harus bisa handle kasus jumlah persamaan lebih banyak dari pada
+        // jumlah variabel
+        // Jika jumlah persamaan lebih banyak dari pada jumlah variabel, harus dilakukan
+        // pengecekan bahwa (jmlh pers - jmlh var) terakhir harus bernilai 0000000. Jika
+        // tidak, maka
+        boolean noSolution = false;
+        int countAllZeroAugARow = augA.getRow();
+        for (int i = 0; i < aug.getRow(); i++) {
+            boolean allZero = true;
+            // Cek Aug A apakah 0 semua pada rownya
+            for (int j = 0; j < augA.getCol(); j++) {
+                if (augA.getElmt(i, j) != 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+
+            // Jika semua 0 pada augA, harus dilakukan pengecekan pada augB.
+            // Jika augB 0, maka lanjut (aman).
+            // Jika augB tidak sama dengan 0, maka tidak akan ada solusi.
+            if (allZero) {
+                countAllZeroAugARow -= 1;
+                if (augB.getElmt(i, 0) != 0) {
+                    noSolution = true;
+                    // Jangan break, sekalian menghitung countAllZeroAugRow.
+                }
             }
         }
         if (noSolution) {
@@ -383,10 +422,25 @@ public class SPL {
         // SOLUSI UNIK
         // Handle solusi unik = Square and All diagonal one
         // Cek apakah diagonal augmentedA bernilai 1 semua (leading ones)
-        if (augA.isSquare() && augA.isIdentity()) {
+        // Dapatkan matriks tanpa baris 0000 aug A
+        Matrix augAWithout0Rows = new Matrix(countAllZeroAugARow, augA.getCol());
+        for (int i = 0; i < augAWithout0Rows.getRow(); i++) {
+            for (int j = 0; j < augAWithout0Rows.getCol(); j++) {
+                double value = augA.getElmt(i, j);
+                augAWithout0Rows.setElmt(i, j, value);
+            }
+        }
+
+        // Jika identitas, memiloiki solusi
+        if (augAWithout0Rows.isSquare() && augAWithout0Rows.isIdentity()) {
             String msg = "";
-            for (int i = 0; i < augB.getRow(); i++) {
-                msg += String.format("x_%d = %.2f\n", i + 1, augB.getElmt(i, 0));
+            for (int i = 0; i < augAWithout0Rows.getRow(); i++) {
+                msg += String.format("x_%d = %.4f", i + 1, augB.getElmt(i, 0));
+
+                // If not laast, add new line
+                if (i != augAWithout0Rows.getRow() - 1) {
+                    msg += "\n";
+                }
             }
             return msg;
         }
@@ -464,13 +518,13 @@ public class SPL {
             // Semua after leading A 0 di augA (tidak ada parametrik), cetak augB jika
             // nilainya 0.
             if (allZeroAfterLeadingOne) {
-                msg += String.format("%.2f", augBElmt);
+                msg += String.format("%.4f", augBElmt);
                 isFirst = false;
             }
             // Ada bilangan bukan 0 setelah leading one (ada parametrik), jangan cetak augB
             // jika nilainya 0.
             if (!allZeroAfterLeadingOne && augBElmt != 0) {
-                msg += String.format("%.2f", augBElmt);
+                msg += String.format("%.4f", augBElmt);
                 isFirst = false;
             }
 
@@ -489,9 +543,9 @@ public class SPL {
                         // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
                         // (tanda berubah jika pindah ruas)
                         if (elmt > 0) {
-                            msg += String.format("%.2f", -1 * elmt);
+                            msg += String.format("%.4f", -1 * elmt);
                         } else {
-                            msg += String.format("%.2f", -1 * elmt);
+                            msg += String.format("%.4f", -1 * elmt);
                         }
                     } else {
                         // Jika koefisien satu, cetak tandanya saja
@@ -509,9 +563,9 @@ public class SPL {
                         // Koefisien elemen tidak 1 atau -1, cetak bilangannya juga
                         // (tanda berubah jika pindah ruas)
                         if (elmt > 0) {
-                            msg += String.format(" - %.2f", elmt);
+                            msg += String.format(" - %.4f", elmt);
                         } else {
-                            msg += String.format(" + %.2f", -1 * elmt);
+                            msg += String.format(" + %.4f", -1 * elmt);
                         }
                     } else {
                         // Jika koefisien satu atau -1, cetak tandanya saja

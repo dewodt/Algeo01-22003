@@ -55,7 +55,7 @@ public class Determinant {
                 try {
                     // Calculate
                     double det = matrix.getDeterminantByERO();
-                    String msg = String.format("Determinan matriks: %.2f", det);
+                    String msg = String.format("Determinan matriks: %.4f", det);
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
@@ -73,7 +73,7 @@ public class Determinant {
                 try {
                     // Calculate
                     double det = matrix.getDeterminantByCofac();
-                    String msg = String.format("Determinan matriks: %.2f", det);
+                    String msg = String.format("Determinan matriks: %.4f", det);
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
