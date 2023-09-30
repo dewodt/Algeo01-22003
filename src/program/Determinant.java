@@ -1,8 +1,10 @@
 package program;
 
 import matrix.*;
+
 import java.util.Scanner;
 import errors.Errors;
+import lib.fileOutput;
 
 public class Determinant {
     public static void app() {
@@ -55,11 +57,20 @@ public class Determinant {
                 try {
                     // Calculate
                     double det = matrix.getDeterminantByERO();
-                    String msg = String.format("Determinan matriks: %.4f", det);
+                    String msg = String.format("Determinan matriks: %.2f", det);
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
                     System.out.println(msg);
+                    Scanner scanner = new Scanner(System.in);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    String save = scanner.nextLine();
+                    if (save.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveDouble(det);
+                    }
+                    scanner.close();
                     System.out.println("=======================================================");
 
                 } catch (Errors.InvalidMatrixSizeException e) {
@@ -73,11 +84,20 @@ public class Determinant {
                 try {
                     // Calculate
                     double det = matrix.getDeterminantByCofac();
-                    String msg = String.format("Determinan matriks: %.4f", det);
+                    String msg = String.format("Determinan matriks: %.2f", det);
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
                     System.out.println(msg);
+                    Scanner scanner = new Scanner(System.in);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    String save = scanner.nextLine();
+                    if (save.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveDouble(det);
+                    }
+                    scanner.close();
                     System.out.println("=======================================================");
 
                 } catch (Errors.InvalidMatrixSizeException e) {

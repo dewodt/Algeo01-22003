@@ -2,13 +2,16 @@ package program;
 
 import matrix.*;
 import errors.Errors;
+import lib.fileOutput;
+
 import java.util.Scanner;
 
 public class SPL {
+    private static Scanner scanner = new Scanner(System.in);
+
     // Main SPL App
     public static void app() {
         int methodOption, inputOption;
-        Scanner scanner = new Scanner(System.in);
 
         // Tampilan menu metode perhitungan
         System.out.println("=============  Pilih Metode Perhitungan:  =============");
@@ -58,8 +61,6 @@ public class SPL {
                 break;
         }
 
-        scanner.close();
-
         // Solve SPL
         switch (methodOption) {
             case 1:
@@ -69,6 +70,14 @@ public class SPL {
                 // Print result
                 System.out.println("======================  RESULT  =======================");
                 System.out.println(gaussResult);
+                System.out.println("=======================================================");
+                System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                scanner.nextLine();
+                String save = scanner.nextLine();
+                if (save.equals("y")) {
+                    fileOutput saveFile = new fileOutput();
+                    saveFile.saveString(gaussResult);
+                }
                 System.out.println("=======================================================");
 
                 break;
@@ -80,6 +89,14 @@ public class SPL {
                 System.out.println("======================  RESULT  =======================");
                 System.out.println(gaussJordanResult);
                 System.out.println("=======================================================");
+                System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                scanner.nextLine();
+                String save2 = scanner.nextLine();
+                if (save2.equals("y")) {
+                    fileOutput saveFile = new fileOutput();
+                    saveFile.saveString(gaussJordanResult);
+                }
+                System.out.println("=======================================================");
 
                 break;
             case 3:
@@ -87,10 +104,26 @@ public class SPL {
                     // Calculate
                     Matrix inverseResult = new Matrix();
                     inverseResult = solveWithInverse(augmentedAb);
+                    String msg = "";
+                    for (int i = 0; i < inverseResult.getRow(); i++) {
+                        msg += ("x_" + (i + 1) + " = " + inverseResult.getElmt(i, 0));
+                        if (i != inverseResult.getRow() - 1) {
+                            msg += "\n";
+                        }
+                    }
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
-                    inverseResult.printMatrix();
+                    System.out.println(msg);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    scanner.nextLine();
+                    String save3 = scanner.nextLine();
+                    if (save3.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveString(msg);
+                        ;
+                    }
                     System.out.println("=======================================================");
 
                 } catch (Errors.SPLUnsolvable e) {
@@ -104,10 +137,25 @@ public class SPL {
                     // Calculate
                     Matrix cramerResult = new Matrix();
                     cramerResult = solveWithCramer(augmentedAb);
-
+                    String msg = "";
+                    for (int i = 0; i < cramerResult.getRow(); i++) {
+                        msg += ("x_" + (i + 1) + " = " + cramerResult.getElmt(i, 0));
+                        if (i != cramerResult.getRow() - 1) {
+                            msg += "\n";
+                        }
+                    }
                     // Print result
                     System.out.println("======================  RESULT  =======================");
-                    cramerResult.printMatrix();
+                    System.out.println(msg);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    scanner.nextLine();
+                    String save3 = scanner.nextLine();
+                    if (save3.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveString(msg);
+                        ;
+                    }
                     System.out.println("=======================================================");
 
                 } catch (Errors.SPLUnsolvable e) {
@@ -358,7 +406,6 @@ public class SPL {
             msg += "\n";
         }
         msg += "Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.";
-
         return msg;
     }
 
@@ -582,7 +629,6 @@ public class SPL {
             msg += "\n";
         }
         msg += "Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.";
-
         return msg;
     }
 
@@ -613,7 +659,6 @@ public class SPL {
             inverseA = augmentedA.getInverseByERO();
 
             result = Matrix.multiplyMatrix(inverseA, augmentedB);
-
             return result;
         } catch (Errors.NoInverseMatrixException | Errors.InvalidMatrixSizeException e) {
             System.out.println("Gagal menggunakan metode balikan matriks");
@@ -674,7 +719,6 @@ public class SPL {
                 // Simpan ke matriks result
                 result.setElmt(i, 0, x);
             }
-
             return result;
         } catch (Errors.DeterminanZeroException | Errors.InvalidMatrixSizeException e) {
             System.out.println("Gagal menyelesaikan SPL menggunakan metode cramer.");
