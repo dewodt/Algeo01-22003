@@ -1,0 +1,6 @@
+x_3 = t_3
+x_5 = t_5
+x_1 = 3.00 + t_5
+x_2 = 2.00t_5
+x_4 = -1.00 + t_5
+Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.

@@ -1,0 +1,5 @@
+x_4 = t_4
+x_1 = -1.0000 + t_4
+x_3 = t_3
+x_2 = 2.0000t_3
+Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.
