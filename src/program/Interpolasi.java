@@ -39,13 +39,29 @@ public class Interpolasi {
                 }
                 Matrix augMatrix = generateMatrix(data);
                 double result = solveInterpolation(augMatrix);
+
                 System.out.println("Nilai f(x) = " + result);
+                String msg = " ";
+                // Simpan hasil persamaan dalam bentuk string (ke msg) untuk disimpan ke file
+                for (int i = 0; i < augMatrix.getRow(); i++) {
+                    if (i == 0) {
+                        msg += augMatrix.getElmt(i, augMatrix.getCol() - 1);
+                    } else if (augMatrix.getElmt(i, augMatrix.getCol() - 1) >= 0) {
+                        msg += " + " + augMatrix.getElmt(i, augMatrix.getCol() - 1) + "x^" + i;
+                    } else {
+                        msg += " - " + augMatrix.getElmt(i, augMatrix.getCol() - 1) * -1 + "x^" + i;
+                    }
+                }
+                msg += "\n";
+                // Convert hasil dari taksiran ke string agar bisa disimpan
+                msg += String.format("%.4f", result);
+
                 System.out.println("=======================================================");
                 System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
                 String save = reader.next();
                 if (save.equals("y")) {
                     fileOutput saveFile = new fileOutput();
-                    saveFile.saveDouble(result);
+                    saveFile.saveString(msg);
                 }
                 System.out.println("=======================================================");
                 break;
@@ -58,12 +74,27 @@ public class Interpolasi {
                 Matrix augMatrix2 = generateMatrix(data);
                 double result2 = solveInterpolation(augMatrix2);
                 System.out.println("Nilai f(x) = " + result2);
+                String msg2 = " ";
+                // Simpan hasil persamaan dalam bentuk string (ke msg) untuk disimpan ke file
+                for (int i = 0; i < augMatrix2.getRow(); i++) {
+                    if (i == 0) {
+                        msg2 += augMatrix2.getElmt(i, augMatrix2.getCol() - 1);
+                    } else if (augMatrix2.getElmt(i, augMatrix2.getCol() - 1) >= 0) {
+                        msg2 += " + " + augMatrix2.getElmt(i, augMatrix2.getCol() - 1) + "x^" + i;
+                    } else {
+                        msg2 += " - " + augMatrix2.getElmt(i, augMatrix2.getCol() - 1) * -1 + "x^" + i;
+                    }
+                }
+                msg2 += "\n";
+                // Convert hasil dari taksiran ke string agar bisa disimpan
+                msg2 += String.format("%.4f", result2);
+
                 System.out.println("=======================================================");
                 System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
                 String save2 = reader.next();
                 if (save2.equals("y")) {
                     fileOutput saveFile = new fileOutput();
-                    saveFile.saveDouble(result2);
+                    saveFile.saveString(msg2);
                 }
                 System.out.println("=======================================================");
                 break;

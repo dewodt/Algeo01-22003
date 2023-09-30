@@ -2,6 +2,8 @@ package program;
 
 import matrix.*;
 import errors.*;
+import lib.fileOutput;
+
 import java.util.Scanner;
 
 public class LinierBerganda {
@@ -135,7 +137,7 @@ public class LinierBerganda {
         Matrix solution = new Matrix();
         try {
             // Calculate
-            solution = Cramer(echelon);
+            solution = SPL.solveWithCramer(echelon);
 
             // Print result
             // System.out.println("====================== RESULT =======================");
@@ -144,19 +146,22 @@ public class LinierBerganda {
 
             // Bentuk Persamaan
             System.out.println("======================  RESULT  =======================");
+            String msg = " ";
             for (int i = 0; i < solution.getRow(); i++) {
                 if (i == 0) {
                     System.out.print("f(x) = " + solution.getElmt(0, 0));
+                    msg += solution.getElmt(0, 0);
                 } else {
                     if (solution.getElmt(i, 0) >= 0) {
                         System.out.print(" + " + solution.getElmt(i, 0) + " x_" + i);
+                        msg += " + " + solution.getElmt(i, 0) + " x_" + i;
                     } else {
                         System.out.print(" - " + (solution.getElmt(i, 0) * (-1)) + " x_" + i);
+                        msg += " - " + (solution.getElmt(i, 0) * (-1)) + " x_" + i;
                     }
-
                 }
-
             }
+            msg += "\n";
             System.out.print(", ");
 
             // Taksiran
@@ -170,12 +175,25 @@ public class LinierBerganda {
             }
 
             // Output Taksiran
+            System.out.println("");
             System.out.print("f( " + input.getElmt(0, 0));
             for (int i = 1; i < n; i++) {
                 System.out.print(", " + (input.getElmt(i, 0)));
             }
             System.out.println(" ) = " + total);
             System.out.println("=======================================================");
+
+            // Convert hasil dari taksiran ke string agar bisa disimpan
+            msg += String.format("%.4f", total);
+
+            Scanner reader = new Scanner(System.in);
+            System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+            String save2 = reader.next();
+            if (save2.equals("y")) {
+                fileOutput saveFile = new fileOutput();
+                saveFile.saveString(msg);
+            }
+            reader.close();
 
         } catch (Errors.SPLUnsolvable e) {
             System.out.println("========================  ERROR  ======================");
@@ -204,65 +222,4 @@ public class LinierBerganda {
         }
         return sum;
     }
-
-    // Solve with cramer
-    public static Matrix Cramer(Matrix augmented) throws Errors.SPLUnsolvable {
-        // Metode cramer hanya bisa SPL dengan solusi unik
-
-        // Pisah matriks augmented A | b.
-        Matrix augmentedA = new Matrix(augmented.getRow(), augmented.getCol() - 1);
-        Matrix augmentedB = new Matrix(augmented.getRow(), 1);
-        for (int i = 0; i < augmented.getRow(); i++) {
-            for (int j = 0; j < augmented.getCol(); j++) {
-                double elmt = augmented.getElmt(i, j);
-                if (j < augmented.getCol() - 1) {
-                    // Augmented A (left)
-                    augmentedA.setElmt(i, j, elmt);
-                } else {
-                    // Augmented b (right)
-                    augmentedB.setElmt(i, 0, elmt);
-                }
-            }
-        }
-
-        try {
-            // Handle determinan 0, throw error
-            double detA = augmentedA.getDeterminantByERO();
-
-            if (detA == 0) {
-                throw new Errors.DeterminanZeroException(
-                        "SPL Tidak dapat diselesaikan dengan metode ini karena determinan = 0.");
-            }
-
-            // Determinan != 0
-            Matrix result = new Matrix(augmented.getRow(), 1);
-
-            for (int i = 0; i < augmentedA.getCol(); i++) {
-                // Inisialisasi
-                Matrix temp = new Matrix();
-                temp.copy(augmentedA);
-
-                // Ubah kolom ke i matriks temp menjadi matriks augmentedB
-                for (int j = 0; j < augmentedA.getRow(); j++) {
-                    double value = augmentedB.getElmt(j, 0);
-                    temp.setElmt(j, i, value);
-                }
-
-                // Hitung nilai solusi xi
-                double detTemp = temp.getDeterminantByERO();
-                double x = detTemp / detA;
-
-                // Simpan ke matriks result
-                result.setElmt(i, 0, x);
-            }
-
-            return result;
-        } catch (Errors.DeterminanZeroException | Errors.InvalidMatrixSizeException e) {
-            System.out.println("Gagal menyelesaikan SPL menggunakan metode cramer.");
-            e.printStackTrace();
-            throw new Errors.SPLUnsolvable(
-                    "SPL Ini tidak bisa diselesaikan dengan metode ini karena tidak memiliki solusi unik.");
-        }
-    }
-
 }

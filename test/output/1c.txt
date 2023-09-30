@@ -1,0 +1,7 @@
+x_1 = t_1
+x_3 = t_3
+x_6 = t_6
+x_2 = 1.0000 - t_6
+x_4 = -2.0000 - t_6
+x_5 = 1.0000 + t_6
+Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.

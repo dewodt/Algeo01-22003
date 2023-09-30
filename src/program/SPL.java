@@ -405,7 +405,7 @@ public class SPL {
             }
             msg += "\n";
         }
-        msg += "Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.";
+        msg += "Dimana t_i adalah parametrik dan t_i anggota bilangan Real.";
         return msg;
     }
 
@@ -628,7 +628,7 @@ public class SPL {
             }
             msg += "\n";
         }
-        msg += "Dimana t_i adalah parametrik t ke i dan t anggota bilangan Real.";
+        msg += "Dimana t_i adalah parametrik t dan t_i anggota bilangan Real.";
         return msg;
     }
 
