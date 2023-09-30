@@ -32,6 +32,26 @@ public class LinierBerganda {
         // Matriks Menyimpan Input
         Matrix inputM = new Matrix(m, n + 1);
 
+        // Input Peubah Yang Ingin Ditaksir
+        double temp;
+        Matrix input = new Matrix(n, 1);
+        System.out.println("============== Masukkan nilai-nilai x_i ===============");
+
+        for (int i = 0; i < n; i++) {
+            if (i == 0) {
+                System.out.print("Masukkan nilai x_" + (i + 1));
+            } else {
+                System.out.print(", x_" + (i + 1));
+            }
+
+        }
+        System.out.println("");
+
+        for (int i = 0; i < n; i++) {
+            temp = sc.nextDouble();
+            input.setElmt(i, 0, temp);
+        }
+
         // Tampilan menu metode input
         System.out.println("================  Pilih Metode Input:  ================");
         System.out.println("1. Keyboard");
@@ -137,18 +157,7 @@ public class LinierBerganda {
                 }
 
             }
-            System.out.println();
-            System.out.println("=======================================================");
-
-            // Input Peubah Yang Ingin Ditaksir
-            double temp;
-            Matrix input = new Matrix(n, 1);
-            System.out.println("============== Masukkan nilai-nilai x_i ===============");
-            for (int i = 0; i < n; i++) {
-                System.out.println("Masukkan nilai x_" + (i + 1) + ": ");
-                temp = sc.nextDouble();
-                input.setElmt(i, 0, temp);
-            }
+            System.out.print(", ");
 
             // Taksiran
             double total = 0;
@@ -161,7 +170,6 @@ public class LinierBerganda {
             }
 
             // Output Taksiran
-            System.out.println("==================== Hasil Taksiran ===================");
             System.out.print("f( " + input.getElmt(0, 0));
             for (int i = 1; i < n; i++) {
                 System.out.print(", " + (input.getElmt(i, 0)));
@@ -170,7 +178,7 @@ public class LinierBerganda {
             System.out.println("=======================================================");
 
         } catch (Errors.SPLUnsolvable e) {
-            System.out.println("======================  ERROR  ========================");
+            System.out.println("========================  ERROR  ======================");
             e.printStackTrace();
             System.out.println("=======================================================");
         }
