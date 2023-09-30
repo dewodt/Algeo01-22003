@@ -5,6 +5,8 @@ import matrix.*;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import lib.fileOutput;
+
 public class Interpolasi {
     private static Scanner reader = new Scanner(System.in);
 
@@ -38,6 +40,14 @@ public class Interpolasi {
                 Matrix augMatrix = generateMatrix(data);
                 double result = solveInterpolation(augMatrix);
                 System.out.println("Nilai f(x) = " + result);
+                System.out.println("=======================================================");
+                System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                String save = reader.next();
+                if (save.equals("y")) {
+                    fileOutput saveFile = new fileOutput();
+                    saveFile.saveDouble(result);
+                }
+                System.out.println("=======================================================");
                 break;
             case 2:
                 data.readMatrixFile();
@@ -48,6 +58,14 @@ public class Interpolasi {
                 Matrix augMatrix2 = generateMatrix(data);
                 double result2 = solveInterpolation(augMatrix2);
                 System.out.println("Nilai f(x) = " + result2);
+                System.out.println("=======================================================");
+                System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                String save2 = reader.next();
+                if (save2.equals("y")) {
+                    fileOutput saveFile = new fileOutput();
+                    saveFile.saveDouble(result2);
+                }
+                System.out.println("=======================================================");
                 break;
         }
 

@@ -1,8 +1,10 @@
 package program;
 
 import matrix.*;
+
 import java.util.Scanner;
 import errors.Errors;
+import lib.fileOutput;
 
 public class Inverse {
     public static void app() {
@@ -55,11 +57,21 @@ public class Inverse {
                 try {
                     // Calculate
                     Matrix inverse = new Matrix();
+
                     inverse = matrix.getInverseByERO();
 
                     // Print result
                     System.out.println("======================  RESULT  =======================");
                     inverse.printMatrix();
+                    Scanner scanner = new Scanner(System.in);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    String save = scanner.nextLine();
+                    if (save.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveMatrix(inverse);
+                    }
+                    scanner.close();
                     System.out.println("=======================================================");
 
                 } catch (Errors.NoInverseMatrixException e) {
@@ -78,6 +90,15 @@ public class Inverse {
                     // Print result
                     System.out.println("======================  RESULT  =======================");
                     inverse.printMatrix();
+                    Scanner scanner = new Scanner(System.in);
+                    System.out.println("=======================================================");
+                    System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+                    String save = scanner.nextLine();
+                    if (save.equals("y")) {
+                        fileOutput saveFile = new fileOutput();
+                        saveFile.saveMatrix(inverse);
+                    }
+                    scanner.close();
                     System.out.println("=======================================================");
 
                 } catch (Errors.NoInverseMatrixException e) {

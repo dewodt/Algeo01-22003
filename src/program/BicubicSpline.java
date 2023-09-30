@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.lang.Math;
 import matrix.*;
 import errors.Errors;
+import lib.fileOutput;
 
 public class BicubicSpline {
     public static void app() {
@@ -160,8 +161,19 @@ public class BicubicSpline {
             int ja = Math.floorDiv(i, 4);
             approxFunc += aMatrix.getElmt(i, 0) * Math.pow(approxX, ia) * Math.pow(approxY, ja);
         }
+        // Jika user memutuskan untuk simpan file, maka akan muncul pilihan ini
         System.out.println(approxFunc);
-
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("=======================================================");
+        System.out.println("Apakah anda ingin menyimpan hasilnya? (y/n)");
+        String save = scanner.nextLine();
+        if (save.equals("y")) {
+            fileOutput saveFile = new fileOutput();
+            // Save hasilnya jika user memilih y
+            saveFile.saveDouble(approxFunc);
+        }
+        scanner.close();
+        System.out.println("=======================================================");
         reader.close();
     }
 
