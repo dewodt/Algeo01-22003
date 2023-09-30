@@ -46,7 +46,8 @@ public class Main {
                 BicubicSpline.app();
                 break;
             case 6:
-                // foo
+                // Regresi linier berganda
+                LinierBerganda.app();
                 break;
             case 7:
                 // Keluar

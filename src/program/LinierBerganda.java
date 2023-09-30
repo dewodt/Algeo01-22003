@@ -96,9 +96,10 @@ public class LinierBerganda {
         }
 
         // Print SPL
-        System.out.println("================= SPL yang diperoleh: =================");
-        mSPL.printMatrix();
-        System.out.println("=======================================================");
+        // System.out.println("================= SPL yang diperoleh:
+        // =================");
+        // mSPL.printMatrix();
+        // System.out.println("=======================================================");
 
         // Matriks Echelon Tereduksi
         Matrix echelon = new Matrix();
@@ -121,58 +122,58 @@ public class LinierBerganda {
             // solution.printMatrix();
             // System.out.println("=======================================================");
 
+            // Bentuk Persamaan
+            System.out.println("======================  RESULT  =======================");
+            for (int i = 0; i < solution.getRow(); i++) {
+                if (i == 0) {
+                    System.out.print("f(x) = " + solution.getElmt(0, 0));
+                } else {
+                    if (solution.getElmt(i, 0) >= 0) {
+                        System.out.print(" + " + solution.getElmt(i, 0) + " x_" + i);
+                    } else {
+                        System.out.print(" - " + (solution.getElmt(i, 0) * (-1)) + " x_" + i);
+                    }
+
+                }
+
+            }
+            System.out.println();
+            System.out.println("=======================================================");
+
+            // Input Peubah Yang Ingin Ditaksir
+            double temp;
+            Matrix input = new Matrix(n, 1);
+            System.out.println("============== Masukkan nilai-nilai x_i ===============");
+            for (int i = 0; i < n; i++) {
+                System.out.println("Masukkan nilai x_" + (i + 1) + ": ");
+                temp = sc.nextDouble();
+                input.setElmt(i, 0, temp);
+            }
+
+            // Taksiran
+            double total = 0;
+            for (int i = 0; i < solution.getRow(); i++) {
+                if (i == 0) {
+                    total += solution.getElmt(i, 0);
+                } else {
+                    total += solution.getElmt(i, 0) * input.getElmt(i - 1, 0);
+                }
+            }
+
+            // Output Taksiran
+            System.out.println("==================== Hasil Taksiran ===================");
+            System.out.print("f( " + input.getElmt(0, 0));
+            for (int i = 1; i < n; i++) {
+                System.out.print(", " + (input.getElmt(i, 0)));
+            }
+            System.out.println(" ) = " + total);
+            System.out.println("=======================================================");
+
         } catch (Errors.SPLUnsolvable e) {
             System.out.println("======================  ERROR  ========================");
             e.printStackTrace();
             System.out.println("=======================================================");
         }
-
-        // Bentuk Persamaan
-        System.out.println("======================  RESULT  =======================");
-        for (int i = 0; i < solution.getRow(); i++) {
-            if (i == 0) {
-                System.out.print("f(x) = " + solution.getElmt(0, 0));
-            } else {
-                if (solution.getElmt(i, 0) >= 0) {
-                    System.out.print(" + " + solution.getElmt(i, 0) + " x_" + i);
-                } else {
-                    System.out.print(" - " + (solution.getElmt(i, 0) * (-1)) + " x_" + i);
-                }
-
-            }
-
-        }
-        System.out.println();
-        System.out.println("=======================================================");
-
-        // Input Peubah Yang Ingin Ditaksir
-        double temp;
-        Matrix input = new Matrix(n, 1);
-        System.out.println("============== Masukkan nilai-nilai x_i ===============");
-        for (int i = 0; i < n; i++) {
-            System.out.println("Masukkan nilai x_" + (i + 1) + ": ");
-            temp = sc.nextDouble();
-            input.setElmt(i, 0, temp);
-        }
-
-        // Taksiran
-        double total = 0;
-        for (int i = 0; i < solution.getRow(); i++) {
-            if (i == 0) {
-                total += solution.getElmt(i, 0);
-            } else {
-                total += solution.getElmt(i, 0) * input.getElmt(i - 1, 0);
-            }
-        }
-
-        // Output Taksiran
-        System.out.println("==================== Hasil Taksiran ===================");
-        System.out.print("f( " + input.getElmt(0, 0));
-        for (int i = 1; i < n; i++) {
-            System.out.print(", " + (input.getElmt(i, 0)));
-        }
-        System.out.println(" ) = " + total);
-        System.out.println("=======================================================");
 
         // Close Scanner
         sc.close();
