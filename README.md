@@ -15,6 +15,26 @@ Selanjutnya, gunakan library tersebut di dalam program Java untuk menyelesaikan
 berbagai persoalan yang dimodelkan dalam bentuk SPL, menyelesaikan persoalan 
 interpolasi, dan persoalan regresi. 
 
+## Struktur Folder Program
+
+```bash
+Algeo01-22003
+├───bin
+│   ├───errors
+│   ├───lib
+│   ├───matrix
+│   └───program
+├───doc
+├───src
+│   ├───errors
+│   ├───lib
+│   ├───matrix
+│   └───program
+└───test
+    ├───input
+    └───output
+```
+
 ## Cara Menjalankan Program
 
 Pertama, clone repository ini terlebih dahulu.
