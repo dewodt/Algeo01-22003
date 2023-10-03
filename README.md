@@ -70,4 +70,4 @@ Program memiliki beberapa fitur yang berhubungan dengan operasi matriks dan apli
 Berikut beberapa link penting yang berkaitan dengan tugas ini.
 
 - [Repository Project](https://github.com/dewodt/Algeo01-22003) 
-- Laporan Tugas
+- [Laporan Tugas](https://github.com/dewodt/Algeo01-22003/blob/main/doc/Algeo01-22003%20.pdf)
